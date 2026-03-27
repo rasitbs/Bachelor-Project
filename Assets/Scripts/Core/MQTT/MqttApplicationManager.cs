@@ -112,6 +112,32 @@ public class MqttApplicationManager : MonoBehaviour
         #endif
     }
 
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            // App is backgrounded (Quest menu opened or headset removed)
+            Debug.Log("[MQTT] Application paused. Pings may stop.");
+        }
+        else
+        {
+            // App is resumed
+            Debug.Log("[MQTT] Application resumed. Verifying connection...");
+
+            // If the broker dropped us while we were away, trigger a reconnect
+            if (!_isConnected && !_isConnecting)
+            {
+                ConnectAsync();
+            }
+        }
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        // Treat "losing focus" the same as a pause
+        OnApplicationPause(!hasFocus);
+    }
+
     /// <summary>
     /// Subscribe to a specific MQTT topic.
     /// Must be called while connected.
@@ -170,7 +196,7 @@ public class MqttApplicationManager : MonoBehaviour
                     .WithTcpServer(brokerHost, brokerPort)
                     .WithClientId(_clientId)
                     .WithCleanSession(true)
-                    .WithKeepAlivePeriod(TimeSpan.FromSeconds(60))
+                    .WithKeepAlivePeriod(TimeSpan.FromSeconds(30))
                     .Build();
 
                 var connectResult = await _client.ConnectAsync(options, _connectionCts.Token);
