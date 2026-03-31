@@ -4,26 +4,32 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuButton : MonoBehaviour
 {
+    // 1. Declare buttons at the class level so all methods can see them
+    private Button _case1;
+    private Button _tutorial;
+
     void Awake()
     {
-        VisualElement root = GetComponent<UIDocument>
-	
-	Button case1 = root.Q<Button>("Case");
-	Button tutorial = root.Q<Button>("Tutorial");
+        VisualElement root = GetComponent<UIDocument>().rootVisualElement;
 
-	case1.clicked += () => LoadScene("Scene 1");
-	tutorial.clicked += () => LoadScene("Tutorial");
+        _case1 = root.Q<Button>("Case");
+        _tutorial = root.Q<Button>("Tutorial");
+
+        if (_case1 != null) _case1.clicked += OnCaseClicked;
+        if (_tutorial != null) _tutorial.clicked += OnTutorialClicked;
     }
+
+    private void OnCaseClicked() => LoadScene("Scene 1");
+    private void OnTutorialClicked() => LoadScene("Tutorial");
 
     private void LoadScene(string sceneName)
     {
         SceneManager.LoadScene(sceneName);
     }
 
-    void onDisable()
+    void OnDisable()
     {
-    	case1.clicked -= () => LoadScene("Scene 1");
-        tutorial.clicked -= () => LoadScene("Tutorial");
+        if (_case1 != null) _case1.clicked -= OnCaseClicked;
+        if (_tutorial != null) _tutorial.clicked -= OnTutorialClicked;
     }
 }
-
