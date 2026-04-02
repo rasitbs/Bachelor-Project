@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class SessionUIController : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] private string lobbySceneName = "Main"; // Change to your actual Lobby scene name
+    [SerializeField] private string lobbySceneName = "Main"; 
     
     private float sessionStartTime;
 
@@ -25,7 +25,7 @@ public class SessionUIController : MonoBehaviour
         {
             Debug.Log($"[SessionUI] Ending session. Duration: {duration:F1}s");
             
-            // 1. Call your existing event service logic
+            // 1. Call existing event service logic
             EventService.Instance.PublishSessionEnded(duration);
             
             // 2. (Optional) Request the final score immediately so it's ready when we get to the lobby
@@ -37,6 +37,6 @@ public class SessionUIController : MonoBehaviour
         }
 
         // 3. Load the Lobby/Main scene
-        SceneManager.LoadNewScene(lobbySceneName);
+        SceneManager.LoadScene(lobbySceneName);
     }
 }
