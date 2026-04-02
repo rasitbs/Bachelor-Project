@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Resources/PerformanceTestRunInfo.json.meta
+<<<<<<< Updated upstream
+guid: 91f3952e74195494487acbe08469faf0
+=======
+guid: 0929240e18018d74e8eecd86e5ce4f13
+>>>>>>> Stashed changes
+TextScriptImporter:
+=======
+guid: f775fe68390ffd7498f8ac902d55b978
+folderAsset: yes
+DefaultImporter:
+>>>>>>> bjørn:Assets/Scripts/UI.meta
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
