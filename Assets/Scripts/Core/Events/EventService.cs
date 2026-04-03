@@ -13,7 +13,6 @@ using UnityEngine.SceneManagement;
 ///   - Build structured TrainingEvent messages
 ///   - Publish to MQTT via MqttApplicationManager
 /// 
-/// Thread-safe; can be called from any system.
 /// </summary>
 public class EventService : MonoBehaviour
 {
