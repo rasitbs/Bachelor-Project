@@ -15,6 +15,9 @@ public class KitMenuController : MonoBehaviour
     [Header("Kit Entries")]
     public KitEntry[] kits;
 
+    [Header("Confirm Buttons")]
+    public GameObject[] confirmButtons;
+
     [Header("References")]
     public InteractionController interactionController;
     public BeltRig beltRig;
@@ -29,9 +32,6 @@ public class KitMenuController : MonoBehaviour
     public Transform[] kitItemLists;
 
     private int _openIndex = -1;
-
-    // TODO: Koble inn gruppens poengsystem her når det er klart.
-    // KitLoadout.isCorrectKit forteller om valgt kit er riktig.
 
     void Start()
     {
@@ -52,6 +52,18 @@ public class KitMenuController : MonoBehaviour
             CloseAll();
             _openIndex = index;
             kits[index].detailPanel.SetActive(true);
+
+            Debug.Log($"[KitMenu] Opening kit {index}, confirmButtons.Length = {confirmButtons.Length}");
+
+            if (confirmButtons.Length > index && confirmButtons[index] != null)
+            {
+                confirmButtons[index].SetActive(true);
+                Debug.Log($"[KitMenu] ConfirmBtn {index} set active!");
+            }
+            else
+            {
+                Debug.Log($"[KitMenu] ConfirmBtn {index} is NULL or out of range!");
+            }
         }
     }
 
@@ -60,11 +72,9 @@ public class KitMenuController : MonoBehaviour
         KitEntry selected = kits[index];
         KitLoadout loadout = selected.loadout;
 
-        // 1. Last utstyr på beltet
         if (beltRig != null && loadout != null)
             beltRig.LoadKit(loadout);
 
-        // 2. Feedback
         if (loadout != null && !loadout.isCorrectKit)
         {
             ShowFeedback("Feil kit valgt!", false);
@@ -76,7 +86,6 @@ public class KitMenuController : MonoBehaviour
             Debug.Log("[KitMenu] Correct kit selected!");
         }
 
-        // 3. Lukk menyen
         CloseAll();
         _openIndex = -1;
         interactionController.CloseMenu();
@@ -86,6 +95,8 @@ public class KitMenuController : MonoBehaviour
     {
         foreach (var kit in kits)
             kit.detailPanel.SetActive(false);
+        foreach (var btn in confirmButtons)
+            if (btn != null) btn.SetActive(false);
     }
 
     void HideFeedback()
@@ -107,24 +118,20 @@ public class KitMenuController : MonoBehaviour
     void BuildAllItemLists()
     {
         if (ppeRowPrefab == null) return;
-
         for (int i = 0; i < kits.Length; i++)
         {
             if (kits[i].loadout == null) continue;
             if (i >= kitItemLists.Length || kitItemLists[i] == null) continue;
 
             Transform listParent = kitItemLists[i];
-
             foreach (Transform child in listParent)
                 Destroy(child.gameObject);
 
             foreach (var entry in kits[i].loadout.items)
             {
                 GameObject row = Instantiate(ppeRowPrefab, listParent);
-
                 TextMeshProUGUI label = row.GetComponentInChildren<TextMeshProUGUI>();
                 if (label != null) label.text = entry.itemName;
-
                 Image[] images = row.GetComponentsInChildren<Image>();
                 if (images.Length >= 2)
                 {
