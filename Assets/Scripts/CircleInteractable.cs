@@ -56,6 +56,7 @@ public class CircleInteractable : MonoBehaviour
     public void SetPlayerInRange(bool inRange)
     {
         _playerInRange = inRange;
-        gameObject.SetActive(inRange);
+        if (buttonRenderer != null)
+            buttonRenderer.enabled = inRange;
     }
 }
