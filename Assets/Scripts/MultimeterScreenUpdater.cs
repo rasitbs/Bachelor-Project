@@ -3,40 +3,29 @@ using TMPro;
 
 public class MultimeterScreenUpdater : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject multimeterScreen;
-    [SerializeField]
-    private GameObject redplug;
-    [SerializeField]
-    private GameObject blackplug;
+    [SerializeField] private MultimeterProbe redProbe;
+    [SerializeField] private MultimeterProbe blackProbe;
 
     public TextMeshProUGUI voltageText;
-    public bool isMeasuringVoltage = false;
+    public bool isMeasuringVoltage = true;
 
-    void Start()
+    void Update()
     {
-        multimeterScreen = this.gameObject;
+        if (!isMeasuringVoltage) return;
 
-        // Find the red and black plugs in the scene
-        if (redplug == null)    
-            redplug = GameObject.Find("RedWirePlug");
-        if (blackplug == null)
-            blackplug = GameObject.Find("BlackWirePlug");
-
-        if (redplug == null || blackplug == null)
+        // Both probes must be plugged in to complete a circuit
+        if (redProbe.IsConnected && blackProbe.IsConnected)
         {
-#if UNITY_EDITOR
-            Debug.LogError("Red or Black plug not found in the scene. Please ensure they are named 'RedWirePlug' and 'BlackWirePlug'.");
-#endif
+            // Calculate voltage difference: Red Probe Voltage - Black Probe Voltage
+            float measuredVoltage = redProbe.GetPotential() - blackProbe.GetPotential();
+
+            // Format to show a whole number (e.g., 230V or -230V)
+            voltageText.text = Mathf.RoundToInt(measuredVoltage).ToString() + "V";
         }
-
-    }
-
-    void updateScreen()
-    {
-        if (isMeasuringVoltage)
+        else
         {
-            voltageText.text = "230V"; // Placeholder 
+            // If one or both are unplugged, show 0V or a disconnected state
+            voltageText.text = "0V";
         }
     }
 }

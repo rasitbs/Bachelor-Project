@@ -4,10 +4,10 @@ public class BreakerSwitchFlipper : MonoBehaviour
 {
     [SerializeField] private GameObject breakerSwitch;
     private bool isFlipped = true;
+    public bool IsOn => isFlipped;
 
     void Start()
     {
-        // If not assigned in Inspector, assume it's this object
         if (breakerSwitch == null)
             breakerSwitch = this.gameObject;
 
