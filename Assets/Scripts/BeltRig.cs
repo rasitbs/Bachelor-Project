@@ -13,6 +13,16 @@ public class BeltRig : MonoBehaviour
     [Header("Belt Slots")]
     public BeltSlot[] slots;
 
+    void Start()
+    {
+        // Auto-load kit from KitSelectionManager when scene loads
+        if (KitSelectionManager.Instance != null && KitSelectionManager.Instance.HasSelectedKit)
+        {
+            LoadKit(KitSelectionManager.Instance.SelectedKit);
+            Debug.Log("[BeltRig] Auto-loaded kit from KitSelectionManager.");
+        }
+    }
+
     public void ClearBelt()
     {
         foreach (var slot in slots)
@@ -44,6 +54,12 @@ public class BeltRig : MonoBehaviour
             slot.spawnedObject = Instantiate(entry.prefab, slot.slotAnchor);
             slot.spawnedObject.transform.localPosition = Vector3.zero;
             slot.spawnedObject.transform.localRotation = Quaternion.identity;
+
+            // Auto-assign slotAnchor til BeltSnapBack hvis den finnes
+            BeltSnapBack snapBack = slot.spawnedObject.GetComponent<BeltSnapBack>();
+            if (snapBack != null)
+                snapBack.slotAnchor = slot.slotAnchor;
+
             Debug.Log($"[BeltRig] Spawned {entry.itemName} on belt.");
         }
     }
