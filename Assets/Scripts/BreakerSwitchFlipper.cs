@@ -3,8 +3,7 @@ using UnityEngine;
 public class BreakerSwitchFlipper : MonoBehaviour
 {
     [SerializeField] private GameObject breakerSwitch;
-    private bool isFlipped = true;
-    public bool IsOn => isFlipped;
+    public bool isFlipped = true;
 
     void Start()
     {
