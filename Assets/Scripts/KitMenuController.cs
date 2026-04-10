@@ -74,6 +74,7 @@ public class KitMenuController : MonoBehaviour
 
         if (beltRig != null && loadout != null)
             beltRig.LoadKit(loadout);
+        KitSelectionManager.Instance?.SelectKit(loadout);
 
         if (loadout != null && !loadout.isCorrectKit)
         {
