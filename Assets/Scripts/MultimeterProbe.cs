@@ -1,37 +1,17 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class MultimeterProbe : MonoBehaviour
 {
-    public bool isRedTo = false;
-    public bool isRedFrom = false;
-    public bool isBlackTo = false;
-    public bool isBlackFrom = false;
+    public string currentSocketTag = "None";
 
-    public void Connect(GameObject other)
+    public void OnSocketConnect(SelectEnterEventArgs args)
     {
-        if(other.CompareTag("Hot Point Black From"))
-        {
-            isBlackFrom = true;
-        }
-        else if(other.CompareTag("Hot Point Black To"))
-        {
-            isBlackTo = true;
-        }
-        else if(other.CompareTag("Hot Point Red From"))
-        {
-            isRedFrom = true;
-        }
-        else if(other.CompareTag("Hot Point Red To"))
-        {
-            isRedTo = true;
-        }
+        currentSocketTag = args.interactorObject.transform.gameObject.tag;
     }
 
-    public void Disconnect()
+    public void OnSocketDisconnect(SelectExitEventArgs args)
     {
-        isRedTo = false;
-        isRedFrom = false;
-        isBlackTo = false;
-        isBlackFrom = false;
+        currentSocketTag = "None";
     }
 }
