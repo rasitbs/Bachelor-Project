@@ -3,15 +3,20 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class MultimeterProbe : MonoBehaviour
 {
-    public string currentSocketTag = "None";
+    public string currentSocketName = "None";
 
     public void OnSocketConnect(SelectEnterEventArgs args)
     {
-        currentSocketTag = args.interactorObject.transform.gameObject.tag;
+        // We grab the .name of the GameObject the Socket is attached to
+        currentSocketName = args.interactorObject.transform.gameObject.name;
+
+#if UNITY_EDITOR
+        Debug.Log("Connected to: " + currentSocketName);
+#endif
     }
 
     public void OnSocketDisconnect(SelectExitEventArgs args)
     {
-        currentSocketTag = "None";
+        currentSocketName = "None";
     }
 }

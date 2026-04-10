@@ -28,16 +28,13 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
     void Update()
     {
-        // 1. Check if both probes are in the "To" side (Standard Connection)
-        bool isCorrectTo = (redProbe.currentSocketTag == "Hot Point Red To" && 
-                            blackProbe.currentSocketTag == "Hot Point Black To");
+        bool isCorrectTo = (redProbe.currentSocketName == "Hot Point Red To" &&
+                            blackProbe.currentSocketName == "Hot Point Black To");
 
-        // 2. Check if both probes are in the "From" side AND the breaker is on
-        bool isCorrectFrom = (breakerSwitch.isFlipped && 
-                              redProbe.currentSocketTag == "Hot Point Red From" && 
-                              blackProbe.currentSocketTag == "Hot Point Black From");
+        bool isCorrectFrom = (breakerSwitch.isFlipped &&
+                              redProbe.currentSocketName == "Hot Point Red From" &&
+                              blackProbe.currentSocketName == "Hot Point Black From");
 
-        // 3. Update the display
         if (isCorrectTo || isCorrectFrom)
         {
             voltageText.text = "230V";
