@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c096fab4b5059af49886d2d87dbbf0c8
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287164
+  packageName: Optimized Ropes And Cables Tool
+  packageVersion: 1.2
+  assetPath: Assets/GogoGaga/OptimizedRopesAndCables/Script/RopeMesh.cs
+  uploadId: 683666

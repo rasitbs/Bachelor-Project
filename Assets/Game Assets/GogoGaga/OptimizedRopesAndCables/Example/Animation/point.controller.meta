@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 03a1bcd0c3f682e4bbf9ed8ab1a0c346
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 287164
+  packageName: Optimized Ropes And Cables Tool
+  packageVersion: 1.2
+  assetPath: Assets/GogoGaga/OptimizedRopesAndCables/Example/Animation/point.controller
+  uploadId: 683666
