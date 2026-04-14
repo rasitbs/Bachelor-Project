@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class CoverLockUnlock : MonoBehaviour
+public class Skrue : MonoBehaviour
 {
-    private bool locked = true;
+    private bool skrudd = true;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
