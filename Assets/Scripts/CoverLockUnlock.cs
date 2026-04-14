@@ -3,15 +3,10 @@ using UnityEngine;
 public class CoverLockUnlock : MonoBehaviour
 {
     private bool locked = true;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // If the cover is locked, and the player activates it while holding screwdriver, it should unscrew all screws and let cover be grabbable.
+    // If the cover is unlocked, and the player activates it while holding screwdriver, it should screw all screws and make cover ungrabbable.
+
+
+
 }
