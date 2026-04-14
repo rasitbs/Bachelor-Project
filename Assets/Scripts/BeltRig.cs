@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BeltRig : MonoBehaviour
 {
@@ -13,13 +14,32 @@ public class BeltRig : MonoBehaviour
     [Header("Belt Slots")]
     public BeltSlot[] slots;
 
+    // Scener hvor kit IKKE skal auto-loades
+    private readonly string[] _scenesWithoutKit = { "Main", "Tutorial", "Final" };
+
     void Start()
     {
-        // Auto-load kit from KitSelectionManager when scene loads
+        string currentScene = SceneManager.GetActiveScene().name;
+
+        // Sjekk om vi er i en scene uten kit-system
+        foreach (string scene in _scenesWithoutKit)
+        {
+            if (currentScene == scene)
+            {
+                Debug.Log($"[BeltRig] Scene '{currentScene}' uses no kit system. Skipping auto-load.");
+                return;
+            }
+        }
+
+        // Auto-load valgt kit i Scene 1, 2, 3 og 3-1
         if (KitSelectionManager.Instance != null && KitSelectionManager.Instance.HasSelectedKit)
         {
             LoadKit(KitSelectionManager.Instance.SelectedKit);
             Debug.Log("[BeltRig] Auto-loaded kit from KitSelectionManager.");
+        }
+        else
+        {
+            Debug.Log("[BeltRig] No kit selected yet.");
         }
     }
 
