@@ -11,7 +11,7 @@ public class BeltSnapBack : MonoBehaviour
     public float snapSpeed = 15f;
 
     // Set automatically by BeltRig when spawned
-    [HideInInspector] public Transform slotAnchor;
+    public Transform slotAnchor;
 
     private XRGrabInteractable _grab;
     private Rigidbody _rb;
