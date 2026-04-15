@@ -32,7 +32,7 @@ public class ScrewUnscrew : MonoBehaviour
 
             for (int i = 0; i < screws.Length; i++)
             {
-                screws[i].transform.localPosition = new Vector3(screws[i].transform.localPosition.x, screws[i].transform.localPosition.y + 0.5f, screws[i].transform.localPosition.z); 
+                screws[i].transform.localPosition = new Vector3(screws[i].transform.localPosition.x, screws[i].transform.localPosition.y + 0.2f, screws[i].transform.localPosition.z); 
             }
         }
         else
@@ -43,7 +43,7 @@ public class ScrewUnscrew : MonoBehaviour
 
             for (int i = 0; i < screws.Length; i++)
             {
-                screws[i].transform.localPosition = new Vector3(screws[i].transform.localPosition.x, screws[i].transform.localPosition.y - 0.5f, screws[i].transform.localPosition.z);
+                screws[i].transform.localPosition = new Vector3(screws[i].transform.localPosition.x, screws[i].transform.localPosition.y - 0.2f, screws[i].transform.localPosition.z);
             }
         }
     }
