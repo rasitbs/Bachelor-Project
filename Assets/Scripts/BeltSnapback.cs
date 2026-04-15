@@ -64,6 +64,8 @@ public class BeltSnapBack : MonoBehaviour
         }
         else
         {
+            // Løsriv fra BeltRig så objektet ikke følger spilleren
+            transform.SetParent(null);
             SetKinematic(false);
             _isOnBelt = false;
         }
