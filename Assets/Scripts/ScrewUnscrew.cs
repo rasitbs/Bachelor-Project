@@ -19,8 +19,6 @@ public class ScrewUnscrew : MonoBehaviour
             screws[i] = lightcover.transform.GetChild(i+1).gameObject; // Assuming screws are the 2nd, 3rd, 4th and 5th children of the light cover
         }
 
-        // Initialize the object in the screwed state
-        isScrewed = true;
         Debug.Log("The object is initially screwed.");
     }
 
@@ -34,7 +32,7 @@ public class ScrewUnscrew : MonoBehaviour
 
             for (int i = 0; i < screws.Length; i++)
             {
-                screws[i].transform.localPosition = new Vector3(screws[i].transform.localPosition.x, screws[i].transform.localPosition.y + 2.0f, screws[i].transform.localPosition.z); 
+                screws[i].transform.localPosition = new Vector3(screws[i].transform.localPosition.x, screws[i].transform.localPosition.y + 0.2f, screws[i].transform.localPosition.z); 
             }
         }
         else
@@ -45,7 +43,7 @@ public class ScrewUnscrew : MonoBehaviour
 
             for (int i = 0; i < screws.Length; i++)
             {
-                screws[i].transform.localPosition = new Vector3(screws[i].transform.localPosition.x, screws[i].transform.localPosition.y - 2.0f, screws[i].transform.localPosition.z);
+                screws[i].transform.localPosition = new Vector3(screws[i].transform.localPosition.x, screws[i].transform.localPosition.y - 0.2f, screws[i].transform.localPosition.z);
             }
         }
     }
