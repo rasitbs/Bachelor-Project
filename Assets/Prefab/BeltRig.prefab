@@ -301,6 +301,12 @@ MonoBehaviour:
   - itemName: Multimeter
     slotAnchor: {fileID: 5129573604593112476}
     spawnedObject: {fileID: 0}
+  - itemName: Hansker_L
+    slotAnchor: {fileID: 6547059060482891865}
+    spawnedObject: {fileID: 0}
+  - itemName: Hansker_R
+    slotAnchor: {fileID: 1295815660182064530}
+    spawnedObject: {fileID: 0}
 --- !u!1 &7708373202927272249
 GameObject:
   m_ObjectHideFlags: 0
