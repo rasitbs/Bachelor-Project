@@ -10,6 +10,8 @@ public class MultimeterScreenUpdater : MonoBehaviour
     
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI voltageText;
+    
+    private bool breakerSwitchIsFlipped = true;
 
     void Start()
     {
@@ -23,7 +25,11 @@ public class MultimeterScreenUpdater : MonoBehaviour
             voltageText = GameObject.Find("MultimeterScreen").GetComponent<TextMeshProUGUI>();
             
         if (breakerSwitch == null)
-            breakerSwitch = GameObject.Find("Breaker Switch").GetComponent<BreakerSwitchFlipper>();
+        {
+            breakerSwitch = GameObject.Find("Breaker Switch")?.GetComponent<BreakerSwitchFlipper>();
+        }
+        
+        breakerSwitchIsFlipped = breakerSwitch != null ? breakerSwitch.isFlipped : true;
     }
 
     void Update()
@@ -31,7 +37,7 @@ public class MultimeterScreenUpdater : MonoBehaviour
         bool isCorrectTo = (redProbe.currentSocketName == "Hot Point Red To" &&
                             blackProbe.currentSocketName == "Hot Point Black To");
 
-        bool isCorrectFrom = (breakerSwitch.isFlipped &&
+        bool isCorrectFrom = (breakerSwitchIsFlipped &&
                               redProbe.currentSocketName == "Hot Point Red From" &&
                               blackProbe.currentSocketName == "Hot Point Black From");
 
