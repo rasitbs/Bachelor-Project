@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &174916477300882175
+--- !u!1 &903557126922233865
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,29 +8,60 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1380097698592898295}
+  - component: {fileID: 1295815660182064530}
   m_Layer: 2
-  m_Name: Slot_Hansker
+  m_Name: Slot_Hansker_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1380097698592898295
+--- !u!4 &1295815660182064530
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 174916477300882175}
+  m_GameObject: {fileID: 903557126922233865}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.25, y: 0.2, z: 0.134}
+  m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
+  m_LocalPosition: {x: 0.396, y: 0.196, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1021478216922494962}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -90, y: 90, z: 0}
+--- !u!1 &1397243235005783011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6547059060482891865}
+  m_Layer: 2
+  m_Name: Slot_Hansker_L
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6547059060482891865
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1397243235005783011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.5, y: -0.5, z: -0.5, w: -0.5}
+  m_LocalPosition: {x: 0.369, y: 0.2, z: 0.111}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1021478216922494962}
+  m_LocalEulerAnglesHint: {x: 270, y: 90, z: 0}
 --- !u!1 &2170178836855742809
 GameObject:
   m_ObjectHideFlags: 0
@@ -238,9 +269,10 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9052817106564103172}
-  - {fileID: 1380097698592898295}
-  - {fileID: 5074351880737957144}
   - {fileID: 5129573604593112476}
+  - {fileID: 5074351880737957144}
+  - {fileID: 6547059060482891865}
+  - {fileID: 1295815660182064530}
   - {fileID: 3706163951320056190}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -261,7 +293,7 @@ MonoBehaviour:
     slotAnchor: {fileID: 9052817106564103172}
     spawnedObject: {fileID: 0}
   - itemName: Hansker
-    slotAnchor: {fileID: 1380097698592898295}
+    slotAnchor: {fileID: 0}
     spawnedObject: {fileID: 0}
   - itemName: Skrutrekker
     slotAnchor: {fileID: 5074351880737957144}
@@ -294,7 +326,7 @@ Transform:
   m_GameObject: {fileID: 7708373202927272249}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.14, y: 0.2, z: 0.298}
+  m_LocalPosition: {x: -0.14, y: 0.181, z: 0.298}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
