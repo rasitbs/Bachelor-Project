@@ -16,6 +16,9 @@ public class CircleInteractable : MonoBehaviour
     public Color normalEmission = new Color(0f, 1f, 1f);
     public Color hoverEmission = new Color(1f, 1f, 0.2f);
 
+    [Header("Audio")]
+    public AudioSource doorSound;
+
     void Awake()
     {
         _interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable>();
@@ -39,6 +42,8 @@ public class CircleInteractable : MonoBehaviour
     {
         if (_playerInRange)
             interactionController.OnButtonActivated();
+        if (doorSound != null)
+            doorSound.Play();
     }
 
     void OnHoverEnter(HoverEnterEventArgs args)

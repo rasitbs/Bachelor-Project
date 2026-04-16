@@ -10,14 +10,13 @@ public class HazardMarker : MonoBehaviour
     public bool isCorrectHazard = true;
 
     [Header("Materials")]
-    public Material striptedMaterial;   // Default dashed/striped look
-    public Material correctMaterial;    // Solid green
-    public Material incorrectMaterial;  // Solid red
+    public Material striptedMaterial;
+    public Material correctMaterial;
+    public Material incorrectMaterial;
 
     [Header("References")]
     public HazardManager hazardManager;
 
-    // State
     private bool _activated = false;
     private XRSimpleInteractable _interactable;
     private Renderer _renderer;
@@ -40,8 +39,7 @@ public class HazardMarker : MonoBehaviour
 
     void OnSelected(SelectEnterEventArgs args)
     {
-        if (_activated) return; // Permanent – no toggle
-
+        if (_activated) return;
         _activated = true;
 
         if (isCorrectHazard)

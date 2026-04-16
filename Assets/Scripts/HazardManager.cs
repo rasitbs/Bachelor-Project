@@ -6,18 +6,27 @@ public class HazardManager : MonoBehaviour
     [Header("References")]
     public HazardChecklistUI checklistUI;
 
+    [Header("Audio")]
+    public AudioClip correctSound;
+    public AudioClip incorrectSound;
+    private AudioSource _audioSource;
+
     [Header("Events")]
-    public UnityEvent onAllHazardsFound;        // Fires when all correct hazards are found
+    public UnityEvent onAllHazardsFound;
     public UnityEvent<HazardMarker> onCorrectHazardFound;
     public UnityEvent<HazardMarker> onIncorrectHazardFound;
 
-    // Counts
     private int _totalCorrect = 0;
     private int _foundCorrect = 0;
 
+    void Awake()
+    {
+        _audioSource = gameObject.AddComponent<AudioSource>();
+        _audioSource.playOnAwake = false;
+    }
+
     void Start()
     {
-        // Count all correct hazards in scene
         HazardMarker[] allMarkers = FindObjectsOfType<HazardMarker>();
         foreach (var marker in allMarkers)
         {
@@ -26,7 +35,6 @@ public class HazardManager : MonoBehaviour
         }
 
         checklistUI?.SetTotalCount(_totalCorrect);
-        Debug.Log($"[HazardManager] Total correct hazards: {_totalCorrect}");
     }
 
     public void OnCorrectHazardFound(HazardMarker marker)
@@ -35,9 +43,11 @@ public class HazardManager : MonoBehaviour
         onCorrectHazardFound?.Invoke(marker);
         checklistUI?.AddCorrectEntry(marker.hazardDescription);
 
+        if (correctSound != null)
+            _audioSource.PlayOneShot(correctSound);
+
         if (_foundCorrect >= _totalCorrect)
         {
-            Debug.Log("[HazardManager] All hazards found!");
             onAllHazardsFound?.Invoke();
             checklistUI?.ShowAllFoundMessage();
         }
@@ -46,7 +56,11 @@ public class HazardManager : MonoBehaviour
     public void OnIncorrectHazardFound(HazardMarker marker)
     {
         onIncorrectHazardFound?.Invoke(marker);
-        Debug.Log($"[HazardManager] Wrong hazard selected: {marker.hazardDescription}");
+
+        if (incorrectSound != null)
+            _audioSource.PlayOneShot(incorrectSound);
+
+        Debug.Log($"[HazardManager] Wrong hazard: {marker.hazardDescription}");
     }
 
     public int FoundCount => _foundCorrect;
