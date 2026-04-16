@@ -14,6 +14,7 @@ public class ScrewUnscrew : MonoBehaviour
 
     private void Awake()
     {
+        isScrewed = true; // The object starts as screwed
         lightcover = this.gameObject; // Assuming the script is attached to the light cover object
         old_armature = GameObject.Find("Light Armature Old"); // Find the armature in the scene
         new_armature = GameObject.Find("Light Armature New"); // Find the new armature in the scene
@@ -46,7 +47,6 @@ public class ScrewUnscrew : MonoBehaviour
             lightcover.GetComponent<XRGrabInteractable>().enabled = true; // Enable interaction when unscrewed
             old_armature.GetComponent<XRGrabInteractable>().enabled = true; // Enable interaction for the old armature when unscrewed
             new_armature.GetComponent<XRGrabInteractable>().enabled = true; // Enable interaction for the new armature when unscrewed
-
             Debug.Log("The object is now unscrewed.");
 
             for (int i = 0; i < screws.Length; i++)
