@@ -31,6 +31,9 @@ public class KitMenuController : MonoBehaviour
     public GameObject ppeRowPrefab;
     public Transform[] kitItemLists;
 
+    [Header("Audio")]
+    public AudioSource closingDoorSound;
+
     private int _openIndex = -1;
 
     void Start()
@@ -90,6 +93,8 @@ public class KitMenuController : MonoBehaviour
         CloseAll();
         _openIndex = -1;
         interactionController.CloseMenu();
+        if (closingDoorSound != null)
+            closingDoorSound.Play();
     }
 
     void CloseAll()
