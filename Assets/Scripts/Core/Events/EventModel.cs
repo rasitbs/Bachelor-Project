@@ -1,10 +1,21 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-/// <summary>
-/// Structured event model matching the header / payload / telemetry design.
-/// All nested classes are [Serializable] so Unity's JsonUtility can serialize them.
-/// </summary>
+[Serializable]
+public class MyEvent
+{
+    public EventHeader header;
+    public EventPayload payload;
+    public TelemetryData telemetry;
+
+    public MyEvent(EventHeader header, EventPayload payload, TelemetryData telemetry = null)
+    {
+        this.header = header;
+        this.payload = payload;
+        this.telemetry = telemetry;
+    }
+}
 
 [Serializable]
 public class EventHeader
@@ -25,14 +36,8 @@ public class EventMetadata
 [Serializable]
 public class EventPayload
 {
-    // SESSION_START
-    public string scenarioName;
+    public string level;
 
-    // SESSION_END
-    public int   finalScore;
-    public float duration;
-
-    // ACTION_INTERACT
     public string targetObjectId;
     public string action;
     public string toolUsed;
@@ -41,7 +46,6 @@ public class EventPayload
     [NonSerialized]
     public EventMetadata metadata;
 
-    // General purpose fields
     public string hazardId;
     public bool   correct;
     public int    points;
@@ -53,7 +57,6 @@ public class EventPayload
 [Serializable]
 public class TelemetryData
 {
-    public int currentScore;
     public Vector3Data playerPosition;
 }
 
@@ -74,17 +77,7 @@ public class Vector3Data
     }
 }
 
-[Serializable]
-public class TrainingEvent
-{
-    public EventHeader   header;
-    public EventPayload  payload;
-    public TelemetryData telemetry;
-}
 
-/// <summary>
-/// Published to request/points when requesting final score.
-/// </summary>
 [Serializable]
 public class ScoreRequestMessage
 {
@@ -92,9 +85,6 @@ public class ScoreRequestMessage
     public string type = "SCORE_REQUEST";
 }
 
-/// <summary>
-/// Received from response/points after a SCORE_REQUEST.
-/// </summary>
 [Serializable]
 public class ScoreResponseMessage
 {

@@ -8,20 +8,6 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Protocol;
 
-/// <summary>
-/// Application-wide MQTT connection manager.
-/// 
-/// Initializes automatically on application startup (before any scene loads).
-/// Remains connected for the lifetime of the application.
-/// 
-/// Responsibilities:
-///   - Establish and maintain MQTT broker connection
-///   - Handle automatic reconnection on network failure
-///   - Queue and publish events asynchronously
-///   - Receive and dispatch incoming messages
-/// 
-/// Thread-safe and non-blocking; all operations are async.
-/// </summary>
 [DefaultExecutionOrder(-100)] // Run before all other scripts
 public class MqttApplicationManager : MonoBehaviour
 {
@@ -36,16 +22,10 @@ public class MqttApplicationManager : MonoBehaviour
     [Header("Topic Configuration")]
     [SerializeField] private string topicEventPublish = "events/";
     [SerializeField] private string topicScoreRequest = "request/points";
-    [SerializeField] private string topicScoreResponse = "response/points";
+    [SerializeField] private string topicScoreResponse = "response/#";
 
-    /// <summary>
-    /// Fired on the main thread when a message is received.
-    /// </summary>
     public static event Action<string, string> OnMessageReceived;
 
-    /// <summary>
-    /// Fired on the main thread when connection status changes.
-    /// </summary>
     public static event Action<bool> OnConnectionStatusChanged;
 
     private IMqttClient _client;
@@ -93,10 +73,6 @@ public class MqttApplicationManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Publish a message to a specific MQTT topic.
-    /// Non-blocking; message is queued and published asynchronously.
-    /// </summary>
     public void Publish(string topic, string payload)
     {
         if (string.IsNullOrEmpty(topic))
@@ -138,10 +114,7 @@ public class MqttApplicationManager : MonoBehaviour
         OnApplicationPause(!hasFocus);
     }
 
-    /// <summary>
-    /// Subscribe to a specific MQTT topic.
-    /// Must be called while connected.
-    /// </summary>
+ 
     public async Task SubscribeAsync(string topic)
     {
         if (_client?.IsConnected != true)
