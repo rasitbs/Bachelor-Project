@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro; // Required for TextMeshPro
+using TMPro; 
 
 public class FinalSceneUIController : MonoBehaviour
 {
@@ -8,23 +8,20 @@ public class FinalSceneUIController : MonoBehaviour
     [SerializeField] private string lobbySceneName = "Main"; 
     
     [Header("UI References")]
-    [SerializeField] private TextMeshProUGUI poengscoreText; // Assign "Poengscore" TMP object in the inspector
+    [SerializeField] private TextMeshProUGUI poengscoreText;
 
     private void OnEnable()
     {
-        // Subscribe to the MQTT score response event
         ScoreResponseHandler.OnScoreReceived += HandleScoreReceived;
     }
 
     private void OnDisable()
-    {
-        // Always unsubscribe to prevent memory leaks
+    { 
         ScoreResponseHandler.OnScoreReceived -= HandleScoreReceived;
     }
 
     private void Start()
     {
-        // Show a loading text while waiting for the MQTT broker
         if (poengscoreText != null)
         {
             poengscoreText.text = "Laster Score...";
@@ -32,26 +29,21 @@ public class FinalSceneUIController : MonoBehaviour
 
         if (EventService.Instance != null)
         {
-            // 1. Calculate total duration from the MainSceneUIController's static variable
-            float duration = Time.time - MainSceneUIController.GlobalSessionStartTime;
-            Debug.Log($"[SessionUI] Ending session. Total Duration: {duration:F1}s");
+            Debug.Log($"[SessionUI] Ending session.");
             
-            // 2. Publish session end
-            EventService.Instance.PublishSessionEnded(duration);
+            // Publish session end event 
+            EventService.Instance.PublishSessionEnded();
             
-            // 3. Request the final score from the backend
+            // Request the final score from the backend
             EventService.Instance.RequestFinalScore();
         }
         else
         {
-            Debug.LogWarning("EventService Instance not found. Make sure you started from the Main scene.");
+            Debug.LogWarning("[SessionUI] EventService Instance not found. Make sure you started from the Main scene.");
             if (poengscoreText != null) poengscoreText.text = "Error: No Event Service";
         }
     }
 
-    /// <summary>
-    /// Called automatically when the backend responds with the score.
-    /// </summary>
     private void HandleScoreReceived(string sessionId, int finalScore)
     {
         Debug.Log($"[SessionUI] Score received for session {sessionId}: {finalScore}");
@@ -62,9 +54,6 @@ public class FinalSceneUIController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// This method will be called by the "Lobby" Button's OnClick event
-    /// </summary>
     public void EndSessionAndGoToLobby()
     {
         // Load the Lobby/Main scene
