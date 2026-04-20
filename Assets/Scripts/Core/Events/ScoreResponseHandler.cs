@@ -2,23 +2,11 @@ using System;
 using System.Text;
 using UnityEngine;
 
-/// <summary>
-/// Handles score responses from the MQTT broker.
-/// 
-/// Responsibilities:
-///   - Listen for score responses on the configured topic
-///   - Parse JSON score messages
-///   - Fire OnScoreReceived event for UI and other listeners
-/// </summary>
 public class ScoreResponseHandler : MonoBehaviour
 {
     [Header("Topic Configuration")]
-    [SerializeField] private string topicScoreResponse = "response/points";
+    [SerializeField] private string topicScoreResponse = "response/#";
 
-    /// <summary>
-    /// Fired when a score response is received from the backend.
-    /// Includes session ID and final score.
-    /// </summary>
     public static event Action<string, int> OnScoreReceived;
 
     private void OnEnable()
