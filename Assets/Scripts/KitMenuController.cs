@@ -34,6 +34,9 @@ public class KitMenuController : MonoBehaviour
     [Header("Audio")]
     public AudioSource closingDoorSound;
 
+    [Header("Next Canvas")]
+    public GameObject nextCanvas;
+
     private int _openIndex = -1;
 
     void Start()
@@ -89,6 +92,9 @@ public class KitMenuController : MonoBehaviour
             ShowFeedback("Riktig kit! Bra jobbet!", true);
             Debug.Log("[KitMenu] Correct kit selected!");
         }
+
+        if (nextCanvas != null)
+            nextCanvas.SetActive(true);
 
         CloseAll();
         _openIndex = -1;
