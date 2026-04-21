@@ -1,9 +1,8 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using Oculus.Interaction;
+using Oculus.Interaction.HandGrab;
 
-
-[RequireComponent(typeof(XRGrabInteractable))]
+[RequireComponent(typeof(Grabbable))]
 [RequireComponent(typeof(Rigidbody))]
 public class BeltSnapBack : MonoBehaviour
 {
@@ -12,39 +11,34 @@ public class BeltSnapBack : MonoBehaviour
     public float snapSpeed = 15f;
 
     [Header("Slot Visual Feedback")]
-    public GameObject slotIndicatorPrefab;  // Optional: assign a glowing sphere prefab
-    public Color idleColor = new Color(1f, 1f, 0f, 0.4f);      // Gul når grabbed
-    public Color nearColor = new Color(0f, 1f, 0.3f, 0.6f);    // Grønn når nær nok
+    public Color idleColor = new Color(1f, 1f, 0f, 0.4f);
+    public Color nearColor = new Color(0f, 1f, 0.3f, 0.6f);
 
-    // Set automatically by BeltRig when spawned
     public Transform slotAnchor;
 
-    private XRGrabInteractable _grab;
+    private Grabbable _grabbable;
     private Rigidbody _rb;
     private bool _isGrabbed = false;
     private bool _isOnBelt = true;
     private bool _isSnapping = false;
 
-    // Slot indicator
     private GameObject _slotIndicator;
     private Renderer _indicatorRenderer;
 
     void Awake()
     {
-        _grab = GetComponent<XRGrabInteractable>();
+        _grabbable = GetComponent<Grabbable>();
         _rb = GetComponent<Rigidbody>();
     }
 
     void OnEnable()
     {
-        _grab.selectEntered.AddListener(OnGrabbed);
-        _grab.selectExited.AddListener(OnReleased);
+        _grabbable.WhenPointerEventRaised += OnPointerEvent;
     }
 
     void OnDisable()
     {
-        _grab.selectEntered.RemoveListener(OnGrabbed);
-        _grab.selectExited.RemoveListener(OnReleased);
+        _grabbable.WhenPointerEventRaised -= OnPointerEvent;
     }
 
     void Start()
@@ -54,7 +48,20 @@ public class BeltSnapBack : MonoBehaviour
         HideIndicator();
     }
 
-    private void OnGrabbed(SelectEnterEventArgs args)
+    private void OnPointerEvent(PointerEvent evt)
+    {
+        switch (evt.Type)
+        {
+            case PointerEventType.Select:
+                OnGrabbed();
+                break;
+            case PointerEventType.Unselect:
+                OnReleased();
+                break;
+        }
+    }
+
+    private void OnGrabbed()
     {
         _isGrabbed = true;
         _isOnBelt = false;
@@ -63,7 +70,7 @@ public class BeltSnapBack : MonoBehaviour
         ShowIndicator();
     }
 
-    private void OnReleased(SelectExitEventArgs args)
+    private void OnReleased()
     {
         _isGrabbed = false;
         HideIndicator();
@@ -86,29 +93,16 @@ public class BeltSnapBack : MonoBehaviour
 
     void Update()
     {
-        // Update indicator color based on distance
         if (_isGrabbed && slotAnchor != null && _indicatorRenderer != null)
         {
             float dist = Vector3.Distance(transform.position, slotAnchor.position);
-            if (dist <= snapDistance * 3f)
-                _indicatorRenderer.material.color = nearColor;
-            else
-                _indicatorRenderer.material.color = idleColor;
+            _indicatorRenderer.material.color = dist <= snapDistance * 3f ? nearColor : idleColor;
         }
 
-        // Snap animation
         if (!_isSnapping || slotAnchor == null) return;
 
-        transform.position = Vector3.Lerp(
-            transform.position,
-            slotAnchor.position,
-            Time.deltaTime * snapSpeed
-        );
-        transform.rotation = Quaternion.Lerp(
-            transform.rotation,
-            slotAnchor.rotation,
-            Time.deltaTime * snapSpeed
-        );
+        transform.position = Vector3.Lerp(transform.position, slotAnchor.position, Time.deltaTime * snapSpeed);
+        transform.rotation = Quaternion.Lerp(transform.rotation, slotAnchor.rotation, Time.deltaTime * snapSpeed);
 
         if (Vector3.Distance(transform.position, slotAnchor.position) < 0.01f)
         {
@@ -125,55 +119,23 @@ public class BeltSnapBack : MonoBehaviour
     {
         if (slotAnchor == null) return;
 
-        if (slotIndicatorPrefab != null)
-        {
-            _slotIndicator = Instantiate(slotIndicatorPrefab, slotAnchor.position, Quaternion.identity);
-            _slotIndicator.transform.SetParent(slotAnchor);
-            _slotIndicator.transform.localPosition = Vector3.zero;
-        }
-        else
-        {
-            // Lag en enkel sphere som placeholder
-            _slotIndicator = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            _slotIndicator.transform.SetParent(slotAnchor);
-            _slotIndicator.transform.localPosition = Vector3.zero;
-            _slotIndicator.transform.localScale = Vector3.one * 0.15f;
+        _slotIndicator = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        _slotIndicator.transform.SetParent(slotAnchor);
+        _slotIndicator.transform.localPosition = Vector3.zero;
+        _slotIndicator.transform.localScale = Vector3.one * 0.15f;
+        Destroy(_slotIndicator.GetComponent<Collider>());
 
-            // Fjern collider så den ikke blokkerer
-            Destroy(_slotIndicator.GetComponent<Collider>());
-
-            // Lag transparent material
-            _indicatorRenderer = _slotIndicator.GetComponent<Renderer>();
-            Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.SetFloat("_Surface", 1); // Transparent
-            mat.SetFloat("_Blend", 0);
-            mat.renderQueue = 3000;
-            mat.color = idleColor;
-            _indicatorRenderer.material = mat;
-        }
-
-        if (_indicatorRenderer == null)
-            _indicatorRenderer = _slotIndicator.GetComponent<Renderer>();
+        _indicatorRenderer = _slotIndicator.GetComponent<Renderer>();
+        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        mat.SetFloat("_Surface", 1);
+        mat.renderQueue = 3000;
+        mat.color = idleColor;
+        _indicatorRenderer.material = mat;
     }
 
-    private void ShowIndicator()
-    {
-        if (_slotIndicator != null)
-            _slotIndicator.SetActive(true);
-    }
-
-    private void HideIndicator()
-    {
-        if (_slotIndicator != null)
-            _slotIndicator.SetActive(false);
-    }
-
-    private void SetKinematic(bool kinematic)
-    {
-        if (_rb == null) return;
-        _rb.isKinematic = kinematic;
-        _rb.useGravity = !kinematic;
-    }
+    private void ShowIndicator() { if (_slotIndicator != null) _slotIndicator.SetActive(true); }
+    private void HideIndicator() { if (_slotIndicator != null) _slotIndicator.SetActive(false); }
+    private void SetKinematic(bool kinematic) { if (_rb != null) { _rb.isKinematic = kinematic; _rb.useGravity = !kinematic; } }
 
     public bool IsOnBelt => _isOnBelt;
 }
