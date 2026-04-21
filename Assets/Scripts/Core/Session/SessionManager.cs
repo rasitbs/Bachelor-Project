@@ -8,8 +8,19 @@ public class SessionManager : MonoBehaviour, ISessionManager
 
     private SessionContext _session;
 
+    public static SessionManager Instance { get; private set; }
+
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
         _session = new SessionContext();
     }
 
@@ -27,5 +38,10 @@ public class SessionManager : MonoBehaviour, ISessionManager
         _session?.Reset();
         _session.Start(Level);
         Debug.Log($"[SessionManager] Session reset: {_session.SessionId}");
+    }
+
+    private void OnDestroy()
+    {
+        _session?.Reset();
     }
 }
