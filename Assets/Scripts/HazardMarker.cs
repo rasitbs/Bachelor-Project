@@ -1,8 +1,5 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-[RequireComponent(typeof(XRSimpleInteractable))]
 public class HazardMarker : MonoBehaviour
 {
     [Header("Hazard Info")]
@@ -18,26 +15,14 @@ public class HazardMarker : MonoBehaviour
     public HazardManager hazardManager;
 
     private bool _activated = false;
-    private XRSimpleInteractable _interactable;
     private Renderer _renderer;
 
     void Awake()
     {
-        _interactable = GetComponent<XRSimpleInteractable>();
         _renderer = GetComponent<Renderer>();
     }
 
-    void OnEnable()
-    {
-        _interactable.selectEntered.AddListener(OnSelected);
-    }
-
-    void OnDisable()
-    {
-        _interactable.selectEntered.RemoveListener(OnSelected);
-    }
-
-    void OnSelected(SelectEnterEventArgs args)
+    public void OnSelected()
     {
         if (_activated) return;
         _activated = true;
