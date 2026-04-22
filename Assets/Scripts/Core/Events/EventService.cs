@@ -63,7 +63,7 @@ public class EventService : MonoBehaviour
 #endif
     }
 
-    public void PublishHazardMarked(string hazardId, bool correct, int points)
+    public void PublishHazardMarked(string hazardId, bool correct, int points, int penalty)
     {
         var evt = new EventBuilder(_sessionManager)
             .WithEventType("HAZARD_MARKED")
@@ -71,6 +71,7 @@ public class EventService : MonoBehaviour
             {
                 hazardId = hazardId,
                 correct = correct,
+                penalty = penalty,
                 points = points
             })
             .Build();
