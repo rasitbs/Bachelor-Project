@@ -35,6 +35,11 @@ public class ScorePopup : MonoBehaviour
             popupText.gameObject.SetActive(false);
     }
 
+    void OnEnable()
+    {
+        Instance = this;
+    }
+
     public void ShowScore(int points)
     {
         if (_currentCoroutine != null)

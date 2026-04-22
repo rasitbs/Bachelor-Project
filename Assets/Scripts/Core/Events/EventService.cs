@@ -63,6 +63,25 @@ public class EventService : MonoBehaviour
 #endif
     }
 
+    public void PublishKitSelection(string kitId, bool isCorrect, int points, int penalty)
+    {
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("KIT_SELECTION")
+            .WithPayload(new EventPayload
+            {
+                hazardId = kitId,
+                correct = isCorrect,
+                points = points,
+                penalty = penalty
+            })
+            .Build();
+        _mqttPublisher?.PublishEvent(evt);
+
+#if UNITY_EDITOR
+    Debug.Log($"[EventService] Published KIT_SELECTION: {kitId} ({(isCorrect ? "correct" : "incorrect")})");
+#endif
+    }
+
     public void PublishHazardMarked(string hazardId, bool correct, int points, int penalty)
     {
         var evt = new EventBuilder(_sessionManager)
