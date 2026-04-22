@@ -1,14 +1,12 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using Oculus.Interaction;
 
-
-[RequireComponent(typeof(XRGrabInteractable))]
+[RequireComponent(typeof(Grabbable))]
 [RequireComponent(typeof(Rigidbody))]
 public class HookItem : MonoBehaviour
 {
     [Header("Belt Settings")]
-    public Transform beltSlotAnchor;        // Where hook returns if not attached
+    public Transform beltSlotAnchor;
     public float beltSnapDistance = 0.3f;
 
     [Header("State")]
@@ -16,25 +14,23 @@ public class HookItem : MonoBehaviour
     private bool _isAttached = false;
     private bool _isOnBelt = true;
 
-    private XRGrabInteractable _grab;
+    private Grabbable _grabbable;
     private Rigidbody _rb;
 
     void Awake()
     {
-        _grab = GetComponent<XRGrabInteractable>();
+        _grabbable = GetComponent<Grabbable>();
         _rb = GetComponent<Rigidbody>();
     }
 
     void OnEnable()
     {
-        _grab.selectEntered.AddListener(OnGrabbed);
-        _grab.selectExited.AddListener(OnReleased);
+        _grabbable.WhenPointerEventRaised += OnPointerEvent;
     }
 
     void OnDisable()
     {
-        _grab.selectEntered.RemoveListener(OnGrabbed);
-        _grab.selectExited.RemoveListener(OnReleased);
+        _grabbable.WhenPointerEventRaised -= OnPointerEvent;
     }
 
     void Start()
@@ -42,21 +38,32 @@ public class HookItem : MonoBehaviour
         SetKinematic(true);
     }
 
-    private void OnGrabbed(SelectEnterEventArgs args)
+    private void OnPointerEvent(PointerEvent evt)
     {
-        if (_isAttached) return; // Can't grab if already attached
+        switch (evt.Type)
+        {
+            case PointerEventType.Select:
+                OnGrabbed();
+                break;
+            case PointerEventType.Unselect:
+                OnReleased();
+                break;
+        }
+    }
+
+    private void OnGrabbed()
+    {
+        if (_isAttached) return;
         _isGrabbed = true;
         _isOnBelt = false;
         SetKinematic(false);
     }
 
-    private void OnReleased(SelectExitEventArgs args)
+    private void OnReleased()
     {
         _isGrabbed = false;
-
         if (_isAttached) return;
 
-        // Snap back to belt if not attached
         SetKinematic(true);
         if (beltSlotAnchor != null)
         {
@@ -66,22 +73,15 @@ public class HookItem : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Called by LiftAttachPoint when hook snaps into place.
-    /// </summary>
     public void AttachToPoint(Transform attachPoint)
     {
         _isAttached = true;
         _isGrabbed = false;
         SetKinematic(true);
-
         transform.position = attachPoint.position;
         transform.rotation = attachPoint.rotation;
         transform.SetParent(attachPoint);
-
-        // Disable grab so player can't pick it up again
-        _grab.enabled = false;
-
+        _grabbable.enabled = false;
         Debug.Log("[HookItem] Hook attached to lift!");
     }
 

@@ -31,12 +31,16 @@ public class HazardMarker : MonoBehaviour
         {
             _renderer.material = correctMaterial;
             hazardManager?.OnCorrectHazardFound(this);
+            ScorePopup.Instance?.ShowScore(10);
+            EventService.Instance?.PublishHazardMarked(hazardDescription, true, 10, 0);
             Debug.Log($"[Hazard] Correct: {hazardDescription}");
         }
         else
         {
             _renderer.material = incorrectMaterial;
             hazardManager?.OnIncorrectHazardFound(this);
+            ScorePopup.Instance?.ShowScore(-5);
+            EventService.Instance?.PublishHazardMarked(hazardDescription, false, 0, 5);
             Debug.Log($"[Hazard] Incorrect: {hazardDescription}");
         }
     }
