@@ -2,18 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Centralized event publishing service for the training system.
-/// 
-/// Provides a clean "API" for game systems to publish training events without
-/// needing to know about MQTT, JSON serialization, or session context.
-/// 
-/// Responsibilities:
-///   - Coordinate with SessionManager for context (session ID, scenario info)
-///   - Build structured TrainingEvent messages
-///   - Publish to MQTT via MqttApplicationManager
-/// 
-/// </summary>
 public class EventService : MonoBehaviour
 {
     public static EventService Instance { get; private set; }
@@ -35,7 +23,6 @@ public class EventService : MonoBehaviour
 
     private void Start()
     {
-        // Resolve dependencies - search for concrete implementations
         foreach (var manager in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
         {
             if (_sessionManager == null && manager is ISessionManager sm)
@@ -50,92 +37,108 @@ public class EventService : MonoBehaviour
             Debug.LogWarning("[EventService] IMqttEventPublisher not found in scene");
     }
 
-    /// <summary>
-    /// Publish a session start event.
-    /// </summary>
-    public void PublishSessionStarted(string scenarioName)
+    public void PublishSessionStarted(string level)
     {
-        var evt = BuildEvent("SESSION_START", new EventPayload { scenarioName = scenarioName });
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("SESSION_START")
+            .WithPayload(new EventPayload { level = level })
+            .Build();
         _mqttPublisher?.PublishEvent(evt);
 
-        #if UNITY_EDITOR
-        Debug.Log($"[EventService] Published SESSION_START: {scenarioName}");
-        #endif
+#if UNITY_EDITOR
+        Debug.Log($"[EventService] Published SESSION_START: {level}");
+#endif
     }
 
-    /// <summary>
-    /// Publish a session end event and request the final score.
-    /// </summary>
-    public void PublishSessionEnded(float duration)
+    public void PublishSessionEnded()
     {
-        var evt = BuildEvent("SESSION_END", new EventPayload { finalScore = 0, duration = duration });
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("SESSION_END")
+            .WithPayload(new EventPayload())
+            .Build();
         _mqttPublisher?.PublishEvent(evt);
 
-        #if UNITY_EDITOR
-        Debug.Log($"[EventService] Published SESSION_END (duration: {duration:F1}s)");
-        #endif
+#if UNITY_EDITOR
+        Debug.Log($"[EventService] Published SESSION_END");
+#endif
     }
 
-    /// <summary>
-    /// Publish a hazard identification event.
-    /// </summary>
-    public void PublishHazardMarked(string hazardId, bool correct, int points)
+    public void PublishKitSelection(string kitId, bool isCorrect, int points, int penalty)
     {
-        var evt = BuildEvent("HAZARD_MARKED", new EventPayload
-        {
-            hazardId = hazardId,
-            correct = correct,
-            points = points
-        });
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("KIT_SELECTION")
+            .WithPayload(new EventPayload
+            {
+                hazardId = kitId,
+                correct = isCorrect,
+                points = points,
+                penalty = penalty
+            })
+            .Build();
         _mqttPublisher?.PublishEvent(evt);
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
+    Debug.Log($"[EventService] Published KIT_SELECTION: {kitId} ({(isCorrect ? "correct" : "incorrect")})");
+#endif
+    }
+
+    public void PublishHazardMarked(string hazardId, bool correct, int points, int penalty)
+    {
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("HAZARD_MARKED")
+            .WithPayload(new EventPayload
+            {
+                hazardId = hazardId,
+                correct = correct,
+                penalty = penalty,
+                points = points
+            })
+            .Build();
+        _mqttPublisher?.PublishEvent(evt);
+
+#if UNITY_EDITOR
         Debug.Log($"[EventService] Published HAZARD_MARKED: {hazardId} ({(correct ? "correct" : "incorrect")})");
-        #endif
+#endif
     }
 
-    /// <summary>
-    /// Publish an HSE safety alert.
-    /// </summary>
     public void PublishHseAlert(string triggerId, string description, int penalty)
     {
-        var evt = BuildEvent("HSE_ALERT_EVENT", new EventPayload
-        {
-            triggerId = triggerId,
-            description = description,
-            penalty = penalty
-        });
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("HSE_ALERT_EVENT")
+            .WithPayload(new EventPayload
+            {
+                triggerId = triggerId,
+                description = description,
+                penalty = penalty
+            })
+            .Build();
         _mqttPublisher?.PublishEvent(evt);
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         Debug.Log($"[EventService] Published HSE_ALERT: {triggerId}");
-        #endif
+#endif
     }
 
-    /// <summary>
-    /// Publish a player action/interaction event.
-    /// </summary>
     public void PublishActionInteract(string targetObjectId, string action, string toolUsed, bool isSuccess,
                                        string reason = "", string consequence = "")
     {
-        var evt = BuildEvent("ACTION_INTERACT", new EventPayload
-        {
-            targetObjectId = targetObjectId,
-            action = action,
-            toolUsed = toolUsed,
-            isSuccess = isSuccess
-        });
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("ACTION_INTERACT")
+            .WithPayload(new EventPayload
+            {
+                targetObjectId = targetObjectId,
+                action = action,
+                toolUsed = toolUsed,
+                isSuccess = isSuccess
+            })
+            .Build();
         _mqttPublisher?.PublishEvent(evt);
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         Debug.Log($"[EventService] Published ACTION_INTERACT: {action} on {targetObjectId}");
-        #endif
+#endif
     }
 
-    /// <summary>
-    /// Request the authoritative final score from the backend.
-    /// Backend will respond on the configured response topic.
-    /// </summary>
     public void RequestFinalScore()
     {
         var request = new ScoreRequestMessage
@@ -146,54 +149,20 @@ public class EventService : MonoBehaviour
 
         _mqttPublisher?.PublishScoreRequest(request);
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         Debug.Log($"[EventService] Requested final score for session: {request.sessionId}");
-        #endif
-    }
-
-    // Private: Event building
-
-    private TrainingEvent BuildEvent(string eventType, EventPayload payload)
-    {
-        var header = new EventHeader
-        {
-            sessionId = _sessionManager?.GetSessionId() ?? "unknown",
-            timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-            sceneId = SceneManager.GetActiveScene().buildIndex,
-            eventType = eventType
-        };
-
-        var telemetry = new TelemetryData
-        {
-            currentScore = 0 // Backend calculates score from events
-        };
-
-        return new TrainingEvent
-        {
-            header = header,
-            payload = payload,
-            telemetry = telemetry
-        };
+#endif
     }
 }
 
-/// <summary>
-/// Abstraction for session context. Allows EventService to work with any
-/// session management system.
-/// </summary>
 public interface ISessionManager
 {
     string GetSessionId();
-    string GetScenarioId();
-    string GetScenarioName();
+    string GetLevel();
 }
 
-/// <summary>
-/// Abstraction for MQTT event publishing. Allows EventService to remain
-/// independent of MQTT transport details.
-/// </summary>
 public interface IMqttEventPublisher
 {
-    void PublishEvent(TrainingEvent evt);
+    void PublishEvent(MyEvent evt); 
     void PublishScoreRequest(ScoreRequestMessage request);
 }

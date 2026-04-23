@@ -31,6 +31,12 @@ public class KitMenuController : MonoBehaviour
     public GameObject ppeRowPrefab;
     public Transform[] kitItemLists;
 
+    [Header("Audio")]
+    public AudioSource closingDoorSound;
+
+    [Header("Next Canvas")]
+    public GameObject nextCanvas;
+
     private int _openIndex = -1;
 
     void Start()
@@ -79,17 +85,26 @@ public class KitMenuController : MonoBehaviour
         if (loadout != null && !loadout.isCorrectKit)
         {
             ShowFeedback("Feil kit valgt!", false);
+            ScorePopup.Instance?.ShowScore(-5);
+            EventService.Instance?.PublishKitSelection($"kit_{index}", false, 0, 5);
             Debug.Log("[KitMenu] Wrong kit selected.");
         }
         else
         {
             ShowFeedback("Riktig kit! Bra jobbet!", true);
+            ScorePopup.Instance?.ShowScore(10);
+            EventService.Instance?.PublishKitSelection($"kit_{index}", true, 10, 0);
             Debug.Log("[KitMenu] Correct kit selected!");
         }
+
+        if (nextCanvas != null)
+            nextCanvas.SetActive(true);
 
         CloseAll();
         _openIndex = -1;
         interactionController.CloseMenu();
+        if (closingDoorSound != null)
+            closingDoorSound.Play();
     }
 
     void CloseAll()

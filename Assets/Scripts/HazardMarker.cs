@@ -1,8 +1,5 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-[RequireComponent(typeof(XRSimpleInteractable))]
 public class HazardMarker : MonoBehaviour
 {
     [Header("Hazard Info")]
@@ -10,50 +7,40 @@ public class HazardMarker : MonoBehaviour
     public bool isCorrectHazard = true;
 
     [Header("Materials")]
-    public Material striptedMaterial;   // Default dashed/striped look
-    public Material correctMaterial;    // Solid green
-    public Material incorrectMaterial;  // Solid red
+    public Material striptedMaterial;
+    public Material correctMaterial;
+    public Material incorrectMaterial;
 
     [Header("References")]
     public HazardManager hazardManager;
 
-    // State
     private bool _activated = false;
-    private XRSimpleInteractable _interactable;
     private Renderer _renderer;
 
     void Awake()
     {
-        _interactable = GetComponent<XRSimpleInteractable>();
         _renderer = GetComponent<Renderer>();
     }
 
-    void OnEnable()
+    public void OnSelected()
     {
-        _interactable.selectEntered.AddListener(OnSelected);
-    }
-
-    void OnDisable()
-    {
-        _interactable.selectEntered.RemoveListener(OnSelected);
-    }
-
-    void OnSelected(SelectEnterEventArgs args)
-    {
-        if (_activated) return; // Permanent – no toggle
-
+        if (_activated) return;
         _activated = true;
 
         if (isCorrectHazard)
         {
             _renderer.material = correctMaterial;
             hazardManager?.OnCorrectHazardFound(this);
+            ScorePopup.Instance?.ShowScore(10);
+            EventService.Instance?.PublishHazardMarked(hazardDescription, true, 10, 0);
             Debug.Log($"[Hazard] Correct: {hazardDescription}");
         }
         else
         {
             _renderer.material = incorrectMaterial;
             hazardManager?.OnIncorrectHazardFound(this);
+            ScorePopup.Instance?.ShowScore(-5);
+            EventService.Instance?.PublishHazardMarked(hazardDescription, false, 0, 5);
             Debug.Log($"[Hazard] Incorrect: {hazardDescription}");
         }
     }
