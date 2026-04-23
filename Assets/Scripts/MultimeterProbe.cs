@@ -1,21 +1,38 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+using Oculus.Interaction;
 
 public class MultimeterProbe : MonoBehaviour
 {
     public string currentSocketName = "None";
 
-    public void OnSocketConnect(SelectEnterEventArgs args)
+    // Drag your SnapInteractor (from the Probe) into this slot in the Inspector
+    public SnapInteractor snapInteractor;
+
+    public void OnSocketConnect()
     {
-        // We grab the .name of the GameObject the Socket is attached to
-        currentSocketName = args.interactorObject.transform.gameObject.name;
+        // We check what the Interactor is currently selecting
+        if (snapInteractor != null && snapInteractor.SelectedInteractable != null)
+        {
+            // This is the SelectInteractable object
+            Transform socketTransform = snapInteractor.SelectedInteractable.transform;
+
+            // Get the parent: 'Hot Point Black From'
+            if (socketTransform.parent != null)
+            {
+                currentSocketName = socketTransform.parent.name;
+            }
+            else
+            {
+                currentSocketName = socketTransform.name;
+            }
+        }
 
 #if UNITY_EDITOR
-        Debug.Log("Connected to: " + currentSocketName);
+        Debug.Log("Probe successfully fetched name: " + currentSocketName);
 #endif
     }
 
-    public void OnSocketDisconnect(SelectExitEventArgs args)
+    public void OnSocketDisconnect()
     {
         currentSocketName = "None";
     }
