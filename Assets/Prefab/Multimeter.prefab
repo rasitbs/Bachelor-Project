@@ -497,6 +497,7 @@ MonoBehaviour:
   redProbe: {fileID: 4724075110927913664}
   blackProbe: {fileID: 1464125864616382992}
   breakerSwitch: {fileID: 0}
+  armatureAttachPoint: {fileID: 0}
   voltageText: {fileID: 3463714230959851186}
 --- !u!1 &5147417738922232636
 GameObject:
