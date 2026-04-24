@@ -497,6 +497,7 @@ MonoBehaviour:
   redProbe: {fileID: 4724075110927913664}
   blackProbe: {fileID: 1464125864616382992}
   breakerSwitch: {fileID: 0}
+  armatureAttachPoint: {fileID: 0}
   voltageText: {fileID: 3463714230959851186}
 --- !u!1 &5147417738922232636
 GameObject:
@@ -894,6 +895,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MultimeterProbe
   currentSocketName: None
+  snapInteractor: {fileID: 0}
 --- !u!1 &7289432601859017535
 GameObject:
   m_ObjectHideFlags: 0
@@ -1076,6 +1078,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MultimeterProbe
   currentSocketName: None
+  snapInteractor: {fileID: 0}
 --- !u!1 &8057089542451752443
 GameObject:
   m_ObjectHideFlags: 0
