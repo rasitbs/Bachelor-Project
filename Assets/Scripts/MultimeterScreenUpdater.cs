@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class MultimeterScreenUpdater : MonoBehaviour
 {
@@ -11,8 +12,11 @@ public class MultimeterScreenUpdater : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI voltageText;
 
+    private bool isScene3_1;
+
     void Start()
     {
+        isScene3_1 = SceneManager.GetActiveScene().name == "3-1";
         // Null checks for setup
         if (redProbe == null)
             redProbe = GameObject.Find("RedWirePlug").GetComponent<MultimeterProbe>();
@@ -31,17 +35,20 @@ public class MultimeterScreenUpdater : MonoBehaviour
     {
         bool isBreakerOn = breakerSwitch != null && breakerSwitch.isFlipped;
 
-        bool isCorrectTo = (redProbe.currentSocketName == "Hot Point Red To" &&
-                            blackProbe.currentSocketName == "Hot Point Black To");
+        bool blockToPower = isScene3_1 && isBreakerOn;
+
+        bool isCorrectTo = !blockToPower &&
+                            (redProbe.currentSocketName == "Hot Point Red To" &&
+                             blackProbe.currentSocketName == "Hot Point Black To");
 
         bool isCorrectFrom = (isBreakerOn &&
                               redProbe.currentSocketName == "Hot Point Red From" &&
                               blackProbe.currentSocketName == "Hot Point Black From");
 
-        bool isCorrectCross = (isBreakerOn &&
+        bool isCorrectCross = (isBreakerOn && !blockToPower &&
                               redProbe.currentSocketName == "Hot Point Red From" &&
                               blackProbe.currentSocketName == "Hot Point Black To") ||
-                             (isBreakerOn &&
+                             (isBreakerOn && !blockToPower &&
                               redProbe.currentSocketName == "Hot Point Red To" &&
                               blackProbe.currentSocketName == "Hot Point Black From");
 

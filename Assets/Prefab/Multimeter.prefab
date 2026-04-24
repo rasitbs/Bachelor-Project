@@ -894,6 +894,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MultimeterProbe
   currentSocketName: None
+  snapInteractor: {fileID: 0}
 --- !u!1 &7289432601859017535
 GameObject:
   m_ObjectHideFlags: 0
@@ -1076,6 +1077,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MultimeterProbe
   currentSocketName: None
+  snapInteractor: {fileID: 0}
 --- !u!1 &8057089542451752443
 GameObject:
   m_ObjectHideFlags: 0
