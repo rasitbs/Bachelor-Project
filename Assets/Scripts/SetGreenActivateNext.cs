@@ -13,16 +13,32 @@ public class SetGreenActivateNext : MonoBehaviour
     public GameObject liftcube;
 
     private List<GameObject> tasks;
-    public bool isDone = false;
+    public bool isDone;
     GameObject curr;
+    public string currentTaskName;
 
     private void Awake()
     {
+        liftcube.SetActive(false);
+        isDone = false;
+
+    }
+
+    private void Start()
+    {
         if (taskCanvas != null)
         {
-            // Get all childen of the canvas.background_panel with the prefix name "Oppgave" and add them to the tasks list
             tasks = new List<GameObject>();
-            foreach (Transform child in taskCanvas.transform)
+
+            /*  Oppgave Canvas
+             *  | - Background Panel
+             *      | - Oppgave 1
+             *      | - Oppgave 2
+             *      ...
+             */
+
+            // Search through all descendants for "Oppgave" GameObjects
+            foreach (TextMeshProUGUI child in taskCanvas.GetComponentsInChildren<TextMeshProUGUI>(true))
             {
                 if (child.name.StartsWith("Oppgave"))
                 {
@@ -33,10 +49,7 @@ public class SetGreenActivateNext : MonoBehaviour
                 }
             }
         }
-    }
 
-    private void Start()
-    {
         foreach (GameObject task in tasks)
         {
             task.GetComponent<TextMeshProUGUI>().color = Color.white;
@@ -45,10 +58,10 @@ public class SetGreenActivateNext : MonoBehaviour
         Debug.Log("Initialized tasks with white color.");
 #endif
         curr = GetCurrentTask();
+        currentTaskName = curr != null ? curr.name : "None";
 #if UNITY_EDITOR
-        Debug.Log("Current task: " + (curr != null ? curr.name : "None"));
+        Debug.Log("Current task: " + currentTaskName);
 #endif
-        liftcube.SetActive(false);
     }
 
     public void SetGreen()
@@ -67,8 +80,9 @@ public class SetGreenActivateNext : MonoBehaviour
 #endif
         }
         curr = GetCurrentTask();
+        currentTaskName = curr != null ? curr.name : "None";    
 #if UNITY_EDITOR
-        Debug.Log("Current task: " + (curr != null ? curr.name : "None"));
+        Debug.Log("Current task: " + currentTaskName);
 #endif
     }
 
@@ -84,6 +98,4 @@ public class SetGreenActivateNext : MonoBehaviour
         isDone = true;
         return null;
     }
-
-    
 }
