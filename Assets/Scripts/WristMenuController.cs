@@ -12,6 +12,9 @@ public class WristMenuController : MonoBehaviour
     [Header("Hazard Canvas")]
     public GameObject hazardCanvas;
 
+    [Header("Risk Assessment Canvas")]
+    public GameObject riskAssessmentCanvas;
+
     void Start()
     {
         if (wristMenuCanvas != null)
@@ -20,12 +23,13 @@ public class WristMenuController : MonoBehaviour
             routineCanvas.SetActive(false);
         if (hazardCanvas != null)
             hazardCanvas.SetActive(false);
+        if (riskAssessmentCanvas != null)
+            riskAssessmentCanvas.SetActive(false);
     }
 
     void Update()
     {
         if (palmTransform == null || wristMenuCanvas == null) return;
-
         float angle = Vector3.Angle(palmTransform.up, Vector3.up);
         wristMenuCanvas.SetActive(angle > (180f - showAngleThreshold));
     }
@@ -56,5 +60,19 @@ public class WristMenuController : MonoBehaviour
             hazardCanvas.transform.rotation = Quaternion.LookRotation(forward);
         }
         hazardCanvas.SetActive(!hazardCanvas.activeSelf);
+    }
+
+    public void ToggleRiskAssessmentCanvas()
+    {
+        if (riskAssessmentCanvas == null) return;
+        if (!riskAssessmentCanvas.activeSelf)
+        {
+            Vector3 forward = Camera.main.transform.forward;
+            forward.y = 0;
+            forward.Normalize();
+            riskAssessmentCanvas.transform.position = Camera.main.transform.position + forward * 0.5f;
+            riskAssessmentCanvas.transform.rotation = Quaternion.LookRotation(forward);
+        }
+        riskAssessmentCanvas.SetActive(!riskAssessmentCanvas.activeSelf);
     }
 }
