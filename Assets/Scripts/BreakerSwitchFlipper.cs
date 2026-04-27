@@ -5,10 +5,17 @@ public class BreakerSwitchFlipper : MonoBehaviour
     [SerializeField] private GameObject breakerSwitch;
     public bool isFlipped = true;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip flipSound;
+
     void Start()
     {
         if (breakerSwitch == null)
             breakerSwitch = this.gameObject;
+
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
 
         ApplyTransform();
     }
@@ -17,6 +24,16 @@ public class BreakerSwitchFlipper : MonoBehaviour
     {
         isFlipped = !isFlipped;
         ApplyTransform();
+
+        if (audioSource != null && flipSound != null)
+        {
+            audioSource.PlayOneShot(flipSound);
+        }
+
+        if(EventService.Instance != null)
+        {
+            EventService.Instance.PublishActionInteract(breakerSwitch.name.ToString(), "Flip breaker switch", "Finger", true);
+        }
     }
 
     private void ApplyTransform()
