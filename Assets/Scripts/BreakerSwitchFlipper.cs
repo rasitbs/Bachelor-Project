@@ -9,6 +9,9 @@ public class BreakerSwitchFlipper : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip flipSound;
 
+    private ConsequenceFlags consequenceFlags;
+    private ShockGiver shockgiver;
+
     void Start()
     {
         if (breakerSwitch == null)
@@ -22,6 +25,10 @@ public class BreakerSwitchFlipper : MonoBehaviour
 
     public void FlipBreakerSwitch()
     {
+        if (!consequenceFlags.isWearingGloves)
+        { 
+            //shockgiver.GiveShock(10);
+        }
         isFlipped = !isFlipped;
         ApplyTransform();
 
