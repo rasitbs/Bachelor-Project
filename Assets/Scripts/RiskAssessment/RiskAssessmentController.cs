@@ -160,6 +160,7 @@ public class RiskAssessmentController : MonoBehaviour
                 points: pointsOnPass,
                 penalty: 0
             );
+            GameStateManager.Instance?.NotifyQuizCompleted();
         }
         else
         {

@@ -50,6 +50,7 @@ public class HazardManager : MonoBehaviour
         {
             onAllHazardsFound?.Invoke();
             checklistUI?.ShowAllFoundMessage();
+            GameStateManager.Instance?.NotifySJACompleted();
         }
     }
 
