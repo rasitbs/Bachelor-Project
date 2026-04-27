@@ -100,3 +100,6 @@ InitTestScene*.unity*
 
 # Unity Assets
 *.hdr
+
+# Claude Code memory
+.claude/

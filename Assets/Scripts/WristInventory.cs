@@ -11,7 +11,11 @@ public class WristInventory : MonoBehaviour
     private GameObject _currentItem;
 
     public void SpawnHelmet() => SpawnItem(helmetPrefab);
-    public void SpawnGloves() => SpawnItem(glovesPrefab);
+    public void SpawnGloves()
+    {
+        SpawnItem(glovesPrefab);
+        GameStateManager.Instance?.NotifyGlovesEquipped();
+    }
     public void SpawnScrewdriver() => SpawnItem(screwdriverPrefab);
     public void SpawnMultimeter() => SpawnItem(multimeterPrefab);
 
