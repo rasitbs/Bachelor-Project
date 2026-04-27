@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class BreakerSwitchFlipper : MonoBehaviour
 {
@@ -9,8 +10,8 @@ public class BreakerSwitchFlipper : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip flipSound;
 
-    private ConsequenceFlags consequenceFlags;
-    private ShockGiver shockgiver;
+    [SerializeField] private ConsequenceFlags consequenceFlags;
+    [SerializeField] private ShockGiver shockgiver;
 
     void Start()
     {
@@ -19,16 +20,31 @@ public class BreakerSwitchFlipper : MonoBehaviour
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
+        
+        if (shockgiver == null)
+            shockgiver = GetComponent<ShockGiver>();
+
+        if (consequenceFlags == null)
+            consequenceFlags = GetComponent<ConsequenceFlags>();
 
         ApplyTransform();
     }
 
+    private bool isProcessing = false;
     public void FlipBreakerSwitch()
     {
+        if (isProcessing)
+            return;
+
+        isProcessing = true;
+
         if (!consequenceFlags.isWearingGloves)
         { 
-            //shockgiver.GiveShock(10);
+            shockgiver.GiveShock();
+            StartCoroutine(ResetInteraction());
+            return;
         }
+
         isFlipped = !isFlipped;
         ApplyTransform();
 
@@ -41,6 +57,8 @@ public class BreakerSwitchFlipper : MonoBehaviour
         {
             EventService.Instance.PublishActionInteract(breakerSwitch.name.ToString(), "Flip breaker switch", "Finger", true);
         }
+
+        StartCoroutine(ResetInteraction());
     }
 
     private void ApplyTransform()
@@ -55,5 +73,11 @@ public class BreakerSwitchFlipper : MonoBehaviour
             breakerSwitch.transform.localPosition = new Vector3(0, -2.61f, 3.98f);
             breakerSwitch.transform.localRotation = Quaternion.Euler(-120, 0, 0);
         }
+    }
+
+    private System.Collections.IEnumerator ResetInteraction()
+    {
+        yield return new WaitForSeconds(0.5f); // Wait half a second before allowing another flip
+        isProcessing = false;
     }
 }
