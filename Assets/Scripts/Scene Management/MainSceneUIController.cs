@@ -9,19 +9,16 @@ public class MainSceneUIController : MonoBehaviour
 
     public void StartSessionAndGoToScene()
     {
-        if (EventService.Instance != null)
+        // Route through the state machine — it publishes SESSION_START and loads the scene.
+        if (GameStateManager.Instance != null)
         {
-            
-            Debug.Log($"[SessionUI] Starting Session '{scenarioName}'");
-            
-            EventService.Instance.PublishSessionStarted(sceneName);
+            Debug.Log($"[SessionUI] Starting session '{scenarioName}' via GameStateManager.");
+            GameStateManager.Instance.ChangeState(GameState.Scene1_PPE);
         }
         else
         {
-            Debug.LogWarning("[SessionUI] EventService Instance not found. Is it in the scene?");
+            Debug.LogWarning("[SessionUI] GameStateManager not found — cannot start session.");
         }
-    
-        SceneManager.LoadScene(sceneName);
     }
 }
 

@@ -27,7 +27,7 @@ public class KitMenuController : MonoBehaviour
     public TextMeshProUGUI feedbackText;
     public float feedbackDuration = 3f;
 
-    [Header("Detail Panel – PPE Rows")]
+    [Header("Detail Panel ï¿½ PPE Rows")]
     public GameObject ppeRowPrefab;
     public Transform[] kitItemLists;
 
@@ -105,6 +105,16 @@ public class KitMenuController : MonoBehaviour
         interactionController.CloseMenu();
         if (closingDoorSound != null)
             closingDoorSound.Play();
+    }
+
+    /// <summary>
+    /// Called by the button on nextCanvas after the player has confirmed their kit.
+    /// Transitions the simulation to Scene 2 (SJA + risk assessment) via the state machine.
+    /// Wire this to the nextCanvas proceed-button's OnClick event in the Inspector.
+    /// </summary>
+    public void ProceedToScene2()
+    {
+        GameStateManager.Instance?.ChangeState(GameState.Scene2_SJA);
     }
 
     void CloseAll()

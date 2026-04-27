@@ -17,6 +17,9 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
     private bool isScene31;
 
+    // Ensures NotifyVoltageVerified is only called once per Scene 3 session.
+    private bool _voltageNotifiedThisScene;
+
     void Start()
     {
         isScene31 = SceneManager.GetActiveScene().name == "3-1";
@@ -73,6 +76,14 @@ public class MultimeterScreenUpdater : MonoBehaviour
         if (isCorrectTo || isCorrectFrom || isCorrectCross)
         {
             voltageText.text = "230V";
+
+            // In Scene 3 only: notify the state machine the first time 230V is confirmed.
+            // Scene 3-1 reuses this multimeter for the bulb swap, so we skip that scene.
+            if (!isScene31 && !_voltageNotifiedThisScene)
+            {
+                _voltageNotifiedThisScene = true;
+                GameStateManager.Instance?.NotifyVoltageVerified();
+            }
         }
         else
         {

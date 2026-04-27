@@ -158,6 +158,23 @@ public class EventService : MonoBehaviour
 #endif
     }
 
+    public void PublishSceneEntered(int sceneNumber, string sceneName)
+    {
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("SCENE_ENTER")
+            .WithPayload(new EventPayload
+            {
+                level       = sceneName,
+                description = $"Scene {sceneNumber}: {sceneName}"
+            })
+            .Build();
+        _mqttPublisher?.PublishEvent(evt);
+
+#if UNITY_EDITOR
+        Debug.Log($"[EventService] Published SCENE_ENTER: Scene {sceneNumber} ({sceneName})");
+#endif
+    }
+
     public void RequestFinalScore()
     {
         var request = new ScoreRequestMessage
