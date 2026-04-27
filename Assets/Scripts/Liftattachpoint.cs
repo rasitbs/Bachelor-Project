@@ -77,8 +77,20 @@ public class LiftAttachPoint : MonoBehaviour
 
     private void LoadNextScene()
     {
-        Debug.Log($"[LiftAttachPoint] Loading scene: {nextSceneName}");
-        SceneManager.LoadScene(nextSceneName);
+        // Route through the state machine so prerequisites are enforced,
+        // the GameState is updated, and the MQTT SCENE_ENTER event is fired.
+        // GameStateManager.NotifyLiftBoarded() calls ChangeState(Scene3_1_Lift)
+        // which loads the scene via its own LoadScene — nextSceneName is no longer used.
+        if (GameStateManager.Instance != null)
+        {
+            GameStateManager.Instance.NotifyLiftBoarded();
+        }
+        else
+        {
+            // Fallback for scenes where GameStateManager is not present (e.g. editor testing).
+            Debug.LogWarning("[LiftAttachPoint] GameStateManager not found — loading scene directly.");
+            SceneManager.LoadScene(nextSceneName);
+        }
     }
 
     private void SetIndicatorColor(Color color)
