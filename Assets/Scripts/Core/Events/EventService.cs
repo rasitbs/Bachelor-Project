@@ -101,6 +101,25 @@ public class EventService : MonoBehaviour
 #endif
     }
 
+    public void PublishRiskAssessmentCompleted(bool passed, float scorePercent, int points, int penalty)
+    {
+        var evt = new EventBuilder(_sessionManager)
+            .WithEventType("RISK_ASSESSMENT_COMPLETED")
+            .WithPayload(new EventPayload
+            {
+                correct = passed,
+                points = points,
+                penalty = penalty,
+                description = $"Score: {scorePercent:F0}%"
+            })
+            .Build();
+        _mqttPublisher?.PublishEvent(evt);
+
+#if UNITY_EDITOR
+    Debug.Log($"[EventService] Published RISK_ASSESSMENT_COMPLETED: {scorePercent:F0}% ({(passed ? "passed" : "failed")})");
+#endif
+    }
+
     public void PublishHseAlert(string triggerId, string description, int penalty)
     {
         var evt = new EventBuilder(_sessionManager)
