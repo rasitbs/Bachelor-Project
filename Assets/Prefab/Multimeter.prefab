@@ -499,6 +499,8 @@ MonoBehaviour:
   breakerSwitch: {fileID: 0}
   armatureAttachPoint: {fileID: 0}
   voltageText: {fileID: 3463714230959851186}
+  hasCheckedTo: 0
+  hasCheckedFrom: 0
 --- !u!1 &5147417738922232636
 GameObject:
   m_ObjectHideFlags: 0
