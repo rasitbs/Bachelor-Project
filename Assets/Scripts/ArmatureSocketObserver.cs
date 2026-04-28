@@ -14,10 +14,6 @@ public class ArmatureSocketObserver : MonoBehaviour
     [Header("References")]
     [SerializeField] private SnapInteractable _armatureSocket;
 
-    [Header("Transition")]
-    [Tooltip("Seconds to wait after armature is installed before loading the Final scene.")]
-    [SerializeField] private float completionDelay = 2f;
-
     private bool _armatureInstalled = false;
 
     private void Awake()
@@ -51,14 +47,7 @@ public class ArmatureSocketObserver : MonoBehaviour
         if (_armatureInstalled) return;
         _armatureInstalled = true;
 
-        Debug.Log($"[ArmatureSocketObserver] Armature installed by {interactor.Identifier} — " +
-                  $"completing scene in {completionDelay}s.");
-
-        Invoke(nameof(CompleteScene), completionDelay);
-    }
-
-    private void CompleteScene()
-    {
-        GameStateManager.Instance?.ChangeState(GameState.Completed);
+        Debug.Log($"[ArmatureSocketObserver] Armature installed by {interactor.Identifier}.");
+        GameStateManager.Instance?.NotifyArmatureInstalled();
     }
 }

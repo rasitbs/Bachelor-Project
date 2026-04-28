@@ -39,10 +39,61 @@ public class GameStateManager : MonoBehaviour
     [SerializeField] private string sceneName_Final    = "Final";
 
     // ── Scene 2 dual-completion gate ──────────────────────────────────────────
-    // Both flags must be true before TryAdvanceFromScene2 fires ChangeState.
+    // Both flags must be true before the player is allowed to proceed.
+    // The state does NOT advance automatically — the player must press the
+    // "next" button which calls NotifyScene2ProceedPressed().
     // They are reset every time Scene2_SJA is entered (supports replay / retry).
     private bool _sjaCompleted;
     private bool _quizCompleted;
+
+    /// <summary>True when both SJA and quiz are done. Use this to enable the
+    /// "proceed" button in Scene 2.</summary>
+    public bool IsScene2Complete => _sjaCompleted && _quizCompleted;
+
+    // ── Scene 3-1 completion gate ─────────────────────────────────────────────
+    // The armature must be installed before the player is allowed to proceed.
+    // Does NOT advance automatically — player must press the proceed button.
+    private bool _armatureInstalled;
+
+    /// <summary>True when the replacement armature has been installed.</summary>
+    public bool IsScene3_1Complete => _armatureInstalled;
+
+    /// <summary>
+    /// Call this from ArmatureSocketObserver when the armature snaps into the socket.
+    /// </summary>
+    public void NotifyArmatureInstalled()
+    {
+        if (CurrentState != GameState.Scene3_1_Lift)
+        {
+            Debug.LogWarning("[GameStateManager] NotifyArmatureInstalled called outside Scene3_1_Lift — ignored.");
+            return;
+        }
+
+        _armatureInstalled = true;
+        Debug.Log("[GameStateManager] Armature installed.");
+    }
+
+    /// <summary>
+    /// Call this from the Scene 3-1 proceed button after the armature is installed.
+    /// Advances to Completed only if the armature has been installed.
+    /// </summary>
+    public void NotifyScene3_1ProceedPressed()
+    {
+        if (CurrentState != GameState.Scene3_1_Lift)
+        {
+            Debug.LogWarning("[GameStateManager] NotifyScene3_1ProceedPressed called outside Scene3_1_Lift — ignored.");
+            return;
+        }
+
+        if (!_armatureInstalled)
+        {
+            Debug.LogWarning("[GameStateManager] Proceed blocked — armature not yet installed.");
+            return;
+        }
+
+        Debug.Log("[GameStateManager] Scene 3-1 complete — player proceeding to Final.");
+        ChangeState(GameState.Completed);
+    }
 
     // ── Scene 3 prerequisites ─────────────────────────────────────────────────
     // The player must equip gloves AND confirm 230 V at the fuse box before
@@ -52,11 +103,10 @@ public class GameStateManager : MonoBehaviour
     private bool _glovesEquipped;
     private bool _voltageVerified;
 
-    /// <summary>
-    /// True when both Scene 3 prerequisites are satisfied.
-    /// The lift-boarding script should check this before allowing the player to attach.
-    /// </summary>
+    /// <summary>True when both Scene 3 prerequisites are satisfied.</summary>
     public bool IsScene3PrerequisitesMet => _glovesEquipped && _voltageVerified;
+    public bool IsGlovesEquipped  => _glovesEquipped;
+    public bool IsVoltageVerified => _voltageVerified;
 
     // ── Unity lifecycle ───────────────────────────────────────────────────────
 
@@ -96,7 +146,6 @@ public class GameStateManager : MonoBehaviour
     /// <summary>
     /// Call this from the SJA (hazard-marking) system when the player has
     /// finished marking all hazards in Scene 2.
-    /// Automatically advances to Scene 3 if the quiz is also complete.
     /// </summary>
     public void NotifySJACompleted()
     {
@@ -107,14 +156,11 @@ public class GameStateManager : MonoBehaviour
         }
 
         _sjaCompleted = true;
-        Debug.Log("[GameStateManager] SJA hazard marking completed.");
-        TryAdvanceFromScene2();
+        Debug.Log($"[GameStateManager] Scene 2 progress — SJA: {_sjaCompleted}, Quiz: {_quizCompleted}");
     }
 
     /// <summary>
-    /// Call this from the risk-assessment quiz system when the player submits
-    /// their answers in Scene 2.
-    /// Automatically advances to Scene 3 if the SJA is also complete.
+    /// Call this from the risk-assessment quiz system when the player passes.
     /// </summary>
     public void NotifyQuizCompleted()
     {
@@ -125,8 +171,31 @@ public class GameStateManager : MonoBehaviour
         }
 
         _quizCompleted = true;
-        Debug.Log("[GameStateManager] Risk-assessment quiz completed.");
-        TryAdvanceFromScene2();
+        Debug.Log($"[GameStateManager] Scene 2 progress — SJA: {_sjaCompleted}, Quiz: {_quizCompleted}");
+    }
+
+    /// <summary>
+    /// Call this from the Scene 2 "next" button after the player has completed
+    /// both the SJA and the quiz and manually chooses to proceed.
+    /// Advances to Scene 3 only if both conditions are satisfied.
+    /// </summary>
+    public void NotifyScene2ProceedPressed()
+    {
+        if (CurrentState != GameState.Scene2_SJA)
+        {
+            Debug.LogWarning("[GameStateManager] NotifyScene2ProceedPressed called outside Scene2_SJA — ignored.");
+            return;
+        }
+
+        if (!_sjaCompleted || !_quizCompleted)
+        {
+            Debug.LogWarning($"[GameStateManager] Proceed blocked — not all Scene 2 tasks done. " +
+                             $"SJA: {_sjaCompleted}, Quiz: {_quizCompleted}");
+            return;
+        }
+
+        Debug.Log("[GameStateManager] Scene 2 complete — player proceeding to Scene 3.");
+        ChangeState(GameState.Scene3_PreLift);
     }
 
     /// <summary>
@@ -190,22 +259,6 @@ public class GameStateManager : MonoBehaviour
     // ── Private state logic ───────────────────────────────────────────────────
 
     /// <summary>
-    /// Advances past Scene 2 only when both the SJA and the quiz are done.
-    /// </summary>
-    private void TryAdvanceFromScene2()
-    {
-        if (_sjaCompleted && _quizCompleted)
-        {
-            Debug.Log("[GameStateManager] Both Scene 2 conditions met — advancing to Scene 3.");
-            ChangeState(GameState.Scene3_PreLift);
-        }
-        else
-        {
-            Debug.Log($"[GameStateManager] Scene 2 progress — SJA: {_sjaCompleted}, Quiz: {_quizCompleted}");
-        }
-    }
-
-    /// <summary>
     /// Called immediately after CurrentState is updated.
     /// Fires the MQTT enter-event and loads the scene for the new state.
     /// </summary>
@@ -240,6 +293,7 @@ public class GameStateManager : MonoBehaviour
                 break;
 
             case GameState.Scene3_1_Lift:
+                _armatureInstalled = false;
                 EventService.Instance?.PublishSceneEntered(4, "AERIAL_LIFT_WORK");
                 LoadScene(sceneName_Lift);
                 break;
