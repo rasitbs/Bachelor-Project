@@ -34,8 +34,8 @@ public class GameStateManager : MonoBehaviour
     [Header("Scene Names (must match Build Settings exactly)")]
     [SerializeField] private string sceneName_PPE      = "Scene1_PPE";
     [SerializeField] private string sceneName_SJA      = "Scene2_SJA";
-    [SerializeField] private string sceneName_PreLift  = "Scene3_PreLift";
-    [SerializeField] private string sceneName_Lift     = "Scene3_1_Lift";
+    [SerializeField] private string sceneName_PreLift  = "3";
+    [SerializeField] private string sceneName_Lift     = "3-1";
     [SerializeField] private string sceneName_Final    = "Final";
 
     // ── Scene 2 dual-completion gate ──────────────────────────────────────────
@@ -96,17 +96,25 @@ public class GameStateManager : MonoBehaviour
     }
 
     // ── Scene 3 prerequisites ─────────────────────────────────────────────────
-    // The player must equip gloves AND confirm 230 V at the fuse box before
-    // they are allowed to board the aerial lift. Unlike Scene 2, the state does
-    // NOT advance automatically when both flags are set — the player still has to
-    // physically board the lift (NotifyLiftBoarded triggers the transition).
+    // All four checklist items must be completed before NotifyLiftBoarded()
+    // accepts the carabiner attach. Does NOT auto-advance — the carabiner
+    // interaction itself triggers the transition.
+    //
+    //   1. _glovesEquipped      — player puts on safety gloves
+    //   2. _checkedVoltageTo    — multimeter placed on "To" side of fuse box (230 V)
+    //   3. _checkedVoltageFrom  — multimeter placed on "From" side of fuse box (230 V)
+    //   4. _fuseVerified        — auto-set when both voltage checks are done,
+    //                             confirming the fuse conducts correctly
     private bool _glovesEquipped;
-    private bool _voltageVerified;
+    private bool _checkedVoltageTo;
+    private bool _checkedVoltageFrom;
+    private bool _fuseVerified;
 
-    /// <summary>True when both Scene 3 prerequisites are satisfied.</summary>
-    public bool IsScene3PrerequisitesMet => _glovesEquipped && _voltageVerified;
-    public bool IsGlovesEquipped  => _glovesEquipped;
-    public bool IsVoltageVerified => _voltageVerified;
+    public bool IsScene3PrerequisitesMet => _glovesEquipped && _checkedVoltageTo && _checkedVoltageFrom && _fuseVerified;
+    public bool IsGlovesEquipped     => _glovesEquipped;
+    public bool IsCheckedVoltageTo   => _checkedVoltageTo;
+    public bool IsCheckedVoltageFrom => _checkedVoltageFrom;
+    public bool IsFuseVerified       => _fuseVerified;
 
     // ── Unity lifecycle ───────────────────────────────────────────────────────
 
@@ -199,8 +207,7 @@ public class GameStateManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Call this from the gloves script when the player equips gloves before
-    /// working at the fuse box in Scene 3.
+    /// Call this from the gloves canvas button when the player puts on safety gloves.
     /// </summary>
     public void NotifyGlovesEquipped()
     {
@@ -209,33 +216,46 @@ public class GameStateManager : MonoBehaviour
             Debug.LogWarning("[GameStateManager] NotifyGlovesEquipped called outside Scene3_PreLift — ignored.");
             return;
         }
-
         _glovesEquipped = true;
-        Debug.Log($"[GameStateManager] Scene 3 progress — Gloves: {_glovesEquipped}, Voltage: {_voltageVerified}");
+        LogScene3Progress();
     }
 
     /// <summary>
-    /// Call this from MultimeterScreenUpdater the first time the display reads 230 V,
-    /// confirming the fuse box is live and the voltage check step is complete.
+    /// Call this from MultimeterScreenUpdater the first time probes are correctly
+    /// placed on the TO side of the fuse box and read 230 V.
     /// </summary>
-    public void NotifyVoltageVerified()
+    public void NotifyVoltageCheckedTo()
     {
         if (CurrentState != GameState.Scene3_PreLift)
         {
-            Debug.LogWarning("[GameStateManager] NotifyVoltageVerified called outside Scene3_PreLift — ignored.");
+            Debug.LogWarning("[GameStateManager] NotifyVoltageCheckedTo called outside Scene3_PreLift — ignored.");
             return;
         }
-
-        _voltageVerified = true;
-        Debug.Log($"[GameStateManager] Scene 3 progress — Gloves: {_glovesEquipped}, Voltage: {_voltageVerified}");
+        _checkedVoltageTo = true;
+        TryAutoVerifyFuse();
+        LogScene3Progress();
     }
 
     /// <summary>
-    /// Call this from the lift-boarding trigger when the player attaches the
-    /// harness and boards the aerial lift at the end of Scene 3.
-    /// Transitions to Scene3_1_Lift only if both prerequisites are satisfied.
-    /// If they are not, the call is ignored with a warning — use
-    /// IsScene3PrerequisitesMet to disable the boarding interaction in the UI.
+    /// Call this from MultimeterScreenUpdater the first time probes are correctly
+    /// placed on the FROM side of the fuse box and read 230 V.
+    /// </summary>
+    public void NotifyVoltageCheckedFrom()
+    {
+        if (CurrentState != GameState.Scene3_PreLift)
+        {
+            Debug.LogWarning("[GameStateManager] NotifyVoltageCheckedFrom called outside Scene3_PreLift — ignored.");
+            return;
+        }
+        _checkedVoltageFrom = true;
+        TryAutoVerifyFuse();
+        LogScene3Progress();
+    }
+
+    /// <summary>
+    /// Call this from the lift carabiner attach trigger.
+    /// Transitions to Scene3_1_Lift only if all four checklist items are done.
+    /// Use IsScene3PrerequisitesMet to disable the carabiner interaction until ready.
     /// </summary>
     public void NotifyLiftBoarded()
     {
@@ -245,18 +265,37 @@ public class GameStateManager : MonoBehaviour
             return;
         }
 
-        if (!_glovesEquipped || !_voltageVerified)
+        if (!IsScene3PrerequisitesMet)
         {
-            Debug.LogWarning($"[GameStateManager] Lift boarding blocked — prerequisites not met. " +
-                             $"Gloves: {_glovesEquipped}, Voltage: {_voltageVerified}");
+            Debug.LogWarning($"[GameStateManager] Carabiner blocked — checklist incomplete. " +
+                             $"Gloves:{_glovesEquipped} To:{_checkedVoltageTo} " +
+                             $"From:{_checkedVoltageFrom} Fuse:{_fuseVerified}");
             return;
         }
 
-        Debug.Log("[GameStateManager] Scene 3 complete — boarding the aerial lift.");
+        Debug.Log("[GameStateManager] Scene 3 checklist complete — boarding the aerial lift.");
         ChangeState(GameState.Scene3_1_Lift);
     }
 
     // ── Private state logic ───────────────────────────────────────────────────
+
+    // When both voltage checks are done the fuse is confirmed working — no
+    // separate player interaction needed.
+    private void TryAutoVerifyFuse()
+    {
+        if (_checkedVoltageTo && _checkedVoltageFrom)
+        {
+            _fuseVerified = true;
+            Debug.Log("[GameStateManager] Fuse verified — both To and From measure 230 V.");
+        }
+    }
+
+    private void LogScene3Progress()
+    {
+        Debug.Log($"[GameStateManager] Scene 3 checklist — " +
+                  $"Gloves:{_glovesEquipped} To:{_checkedVoltageTo} " +
+                  $"From:{_checkedVoltageFrom} Fuse:{_fuseVerified}");
+    }
 
     /// <summary>
     /// Called immediately after CurrentState is updated.
@@ -285,9 +324,11 @@ public class GameStateManager : MonoBehaviour
                 break;
 
             case GameState.Scene3_PreLift:
-                // Reset prerequisites so a replayed scene always starts from scratch.
-                _glovesEquipped = false;
-                _voltageVerified = false;
+                // Reset all four checklist flags so a replayed scene starts clean.
+                _glovesEquipped     = false;
+                _checkedVoltageTo   = false;
+                _checkedVoltageFrom = false;
+                _fuseVerified       = false;
                 EventService.Instance?.PublishSceneEntered(3, "PRE_LIFT_PREPARATIONS");
                 LoadScene(sceneName_PreLift);
                 break;
