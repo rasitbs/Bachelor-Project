@@ -12,6 +12,7 @@ public class BreakerSwitchFlipper : MonoBehaviour
 
     [SerializeField] private ConsequenceFlags consequenceFlags;
     [SerializeField] private ShockGiver shockgiver;
+    [SerializeField] private SetGreenActivateNext setGreenActivateNext;
 
     void Start()
     {
@@ -26,6 +27,9 @@ public class BreakerSwitchFlipper : MonoBehaviour
 
         if (consequenceFlags == null)
             consequenceFlags = GetComponent<ConsequenceFlags>();
+
+        if (setGreenActivateNext == null)
+            setGreenActivateNext = FindObjectOfType<SetGreenActivateNext>();
 
         ApplyTransform();
     }
@@ -46,6 +50,12 @@ public class BreakerSwitchFlipper : MonoBehaviour
         }
 
         isFlipped = !isFlipped;
+
+        if(setGreenActivateNext.currentTaskName == "Oppgave 4")
+        {             
+            setGreenActivateNext.SetGreen();
+        }
+
         ApplyTransform();
 
         if (audioSource != null && flipSound != null)

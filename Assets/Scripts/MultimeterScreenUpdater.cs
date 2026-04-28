@@ -16,18 +16,29 @@ public class MultimeterScreenUpdater : MonoBehaviour
     [SerializeField] private TextMeshProUGUI voltageText;
 
     private bool isScene31;
+    private bool isScene3;
 
+    public bool hasCheckedTo;
+    public bool hasCheckedFrom;
     // Ensures NotifyVoltageVerified is only called once per Scene 3 session.
     private bool _voltageNotifiedThisScene;
 
     void Start()
     {
         isScene31 = SceneManager.GetActiveScene().name == "3-1";
+#if UNITY_EDITOR
+        Debug.Log($"MultimeterScreenUpdater: Detected Scene 3-1: {isScene31}");
+#endif
+
+        isScene3 = SceneManager.GetActiveScene().name == "3";
+#if UNITY_EDITOR
+        Debug.Log($"MultimeterScreenUpdater: Detected Scene 3: {isScene3}");
+#endif
 
         // References
         if (redProbe == null) redProbe = GameObject.Find("RedWirePlug").GetComponent<MultimeterProbe>();
         if (blackProbe == null) blackProbe = GameObject.Find("BlackWirePlug").GetComponent<MultimeterProbe>();
-        if (voltageText == null) voltageText = GameObject.Find("MultimeterScreen").GetComponent<TextMeshProUGUI>();
+        if (voltageText == null) voltageText = GameObject.Find("Screen").GetComponent<TextMeshProUGUI>();
         if (breakerSwitch == null) breakerSwitch = GameObject.Find("Breaker Switch")?.GetComponent<BreakerSwitchFlipper>();
 
         // Find the Attach Point child if not assigned
@@ -39,6 +50,9 @@ public class MultimeterScreenUpdater : MonoBehaviour
                 armatureAttachPoint = socketObj.GetComponentInChildren<SnapInteractable>();
             }
         }
+
+        hasCheckedFrom = false;
+        hasCheckedTo = false;
     }
 
     void Update()
@@ -75,6 +89,18 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
         if (isCorrectTo || isCorrectFrom || isCorrectCross)
         {
+            if (isCorrectTo)
+            {
+                // Has checked to is set to correct, point manager checks list and ensures Oppgave 2 is current task and sets green
+                hasCheckedTo = true;
+            }
+
+            if (isCorrectFrom)
+            {
+                // Has checked from is set to correct, point manager checks list and ensures Oppgave 3 is current task and sets green
+                hasCheckedFrom = true;
+            }
+            
             voltageText.text = "230V";
 
             // In Scene 3 only: notify the state machine the first time 230V is confirmed.
