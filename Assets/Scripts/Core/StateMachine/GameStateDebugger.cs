@@ -19,17 +19,23 @@ using UnityEngine;
 ///   S  →  Notify: SJA Completed
 ///   Q  →  Notify: Quiz Completed
 ///   G  →  Notify: Gloves Equipped
-///   V  →  Notify: Voltage Verified
+///   T  →  Notify: Voltage Checked To
+///   R  →  Notify: Voltage Checked From
 ///   L  →  Notify: Lift Boarded
+///   P  →  Notify: Scene 2 Proceed
+///   F  →  Notify: Scene 3-1 Proceed
 ///
 /// Remove this component before building for production.
 /// </summary>
 public class GameStateDebugger : MonoBehaviour
 {
     [Header("Live state — updates every frame in Play mode")]
-    [SerializeField] private string _currentState = "not running";
-    [SerializeField] private bool _scene3GlovesFlag;
-    [SerializeField] private bool _scene3VoltageFlag;
+    [SerializeField] private string _currentState      = "not running";
+    [SerializeField] private bool   _glovesEquipped;
+    [SerializeField] private bool   _checkedVoltageTo;
+    [SerializeField] private bool   _checkedVoltageFrom;
+    [SerializeField] private bool   _fuseVerified;
+    [SerializeField] private bool   _scene3AllMet;
 
     [Header("Settings")]
     [SerializeField] private bool enableKeyboardShortcuts = true;
@@ -42,18 +48,17 @@ public class GameStateDebugger : MonoBehaviour
 
         if (!enableKeyboardShortcuts) return;
 
-        // Force state transitions — number keys
         if (Input.GetKeyDown(KeyCode.Alpha1)) ForceScene1_PPE();
         if (Input.GetKeyDown(KeyCode.Alpha2)) ForceScene2_SJA();
         if (Input.GetKeyDown(KeyCode.Alpha3)) ForceScene3_PreLift();
         if (Input.GetKeyDown(KeyCode.Alpha4)) ForceScene3_1_Lift();
         if (Input.GetKeyDown(KeyCode.Alpha5)) ForceCompleted();
 
-        // Notify gate signals — letter keys
         if (Input.GetKeyDown(KeyCode.S)) NotifySJA();
         if (Input.GetKeyDown(KeyCode.Q)) NotifyQuiz();
         if (Input.GetKeyDown(KeyCode.G)) NotifyGloves();
-        if (Input.GetKeyDown(KeyCode.V)) NotifyVoltage();
+        if (Input.GetKeyDown(KeyCode.T)) NotifyVoltageTo();
+        if (Input.GetKeyDown(KeyCode.R)) NotifyVoltageFrom();
         if (Input.GetKeyDown(KeyCode.L)) NotifyLift();
         if (Input.GetKeyDown(KeyCode.P)) NotifyScene2Proceed();
         if (Input.GetKeyDown(KeyCode.F)) NotifyScene3_1Proceed();
@@ -102,11 +107,18 @@ public class GameStateDebugger : MonoBehaviour
         GameStateManager.Instance?.NotifyGlovesEquipped();
     }
 
-    [ContextMenu("Notify: Voltage Verified  [V]")]
-    public void NotifyVoltage()
+    [ContextMenu("Notify: Voltage Checked To  [T]")]
+    public void NotifyVoltageTo()
     {
-        Debug.Log("[GameStateDebugger] Notifying voltage verified.");
-        GameStateManager.Instance?.NotifyVoltageVerified();
+        Debug.Log("[GameStateDebugger] Notifying voltage checked To.");
+        GameStateManager.Instance?.NotifyVoltageCheckedTo();
+    }
+
+    [ContextMenu("Notify: Voltage Checked From  [R]")]
+    public void NotifyVoltageFrom()
+    {
+        Debug.Log("[GameStateDebugger] Notifying voltage checked From.");
+        GameStateManager.Instance?.NotifyVoltageCheckedFrom();
     }
 
     [ContextMenu("Notify: Lift Boarded  [L]")]
@@ -114,17 +126,6 @@ public class GameStateDebugger : MonoBehaviour
     {
         Debug.Log("[GameStateDebugger] Notifying lift boarded.");
         GameStateManager.Instance?.NotifyLiftBoarded();
-    }
-
-    // ── Shortcut combos for Scene 2 and Scene 3 full gate bypass ─────────────
-
-    [ContextMenu("Bypass: Complete Scene 2 (SJA + Quiz + Proceed)")]
-    public void BypassScene2()
-    {
-        Debug.Log("[GameStateDebugger] Bypassing Scene 2 gates.");
-        GameStateManager.Instance?.NotifySJACompleted();
-        GameStateManager.Instance?.NotifyQuizCompleted();
-        GameStateManager.Instance?.NotifyScene2ProceedPressed();
     }
 
     [ContextMenu("Notify: Scene 2 Proceed Pressed  [P]")]
@@ -148,12 +149,24 @@ public class GameStateDebugger : MonoBehaviour
         GameStateManager.Instance?.NotifyScene3_1ProceedPressed();
     }
 
-    [ContextMenu("Bypass: Complete Scene 3 prereqs (Gloves + Voltage)")]
+    // ── Bypass combos ─────────────────────────────────────────────────────────
+
+    [ContextMenu("Bypass: Complete Scene 2 (SJA + Quiz + Proceed)")]
+    public void BypassScene2()
+    {
+        Debug.Log("[GameStateDebugger] Bypassing Scene 2 gates.");
+        GameStateManager.Instance?.NotifySJACompleted();
+        GameStateManager.Instance?.NotifyQuizCompleted();
+        GameStateManager.Instance?.NotifyScene2ProceedPressed();
+    }
+
+    [ContextMenu("Bypass: Complete Scene 3 checklist (Gloves + To + From)")]
     public void BypassScene3Prereqs()
     {
-        Debug.Log("[GameStateDebugger] Bypassing Scene 3 prerequisites.");
+        Debug.Log("[GameStateDebugger] Bypassing Scene 3 checklist.");
         GameStateManager.Instance?.NotifyGlovesEquipped();
-        GameStateManager.Instance?.NotifyVoltageVerified();
+        GameStateManager.Instance?.NotifyVoltageCheckedTo();
+        GameStateManager.Instance?.NotifyVoltageCheckedFrom();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -173,14 +186,20 @@ public class GameStateDebugger : MonoBehaviour
     {
         if (GameStateManager.Instance == null)
         {
-            _currentState      = "GameStateManager not found";
-            _scene3GlovesFlag  = false;
-            _scene3VoltageFlag = false;
+            _currentState       = "GameStateManager not found";
+            _glovesEquipped     = false;
+            _checkedVoltageTo   = false;
+            _checkedVoltageFrom = false;
+            _fuseVerified       = false;
+            _scene3AllMet       = false;
             return;
         }
 
-        _currentState      = GameStateManager.Instance.CurrentState.ToString();
-        _scene3GlovesFlag  = GameStateManager.Instance.IsGlovesEquipped;
-        _scene3VoltageFlag = GameStateManager.Instance.IsVoltageVerified;
+        _currentState       = GameStateManager.Instance.CurrentState.ToString();
+        _glovesEquipped     = GameStateManager.Instance.IsGlovesEquipped;
+        _checkedVoltageTo   = GameStateManager.Instance.IsCheckedVoltageTo;
+        _checkedVoltageFrom = GameStateManager.Instance.IsCheckedVoltageFrom;
+        _fuseVerified       = GameStateManager.Instance.IsFuseVerified;
+        _scene3AllMet       = GameStateManager.Instance.IsScene3PrerequisitesMet;
     }
 }

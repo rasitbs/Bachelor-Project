@@ -20,8 +20,8 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
     public bool hasCheckedTo;
     public bool hasCheckedFrom;
-    // Ensures NotifyVoltageVerified is only called once per Scene 3 session.
-    private bool _voltageNotifiedThisScene;
+    private bool _toNotifiedThisScene;
+    private bool _fromNotifiedThisScene;
 
     void Start()
     {
@@ -51,8 +51,10 @@ public class MultimeterScreenUpdater : MonoBehaviour
             }
         }
 
-        hasCheckedFrom = false;
-        hasCheckedTo = false;
+        hasCheckedFrom        = false;
+        hasCheckedTo          = false;
+        _toNotifiedThisScene   = false;
+        _fromNotifiedThisScene = false;
     }
 
     void Update()
@@ -91,25 +93,25 @@ public class MultimeterScreenUpdater : MonoBehaviour
         {
             if (isCorrectTo)
             {
-                // Has checked to is set to correct, point manager checks list and ensures Oppgave 2 is current task and sets green
                 hasCheckedTo = true;
+                if (isScene3 && !_toNotifiedThisScene)
+                {
+                    _toNotifiedThisScene = true;
+                    GameStateManager.Instance?.NotifyVoltageCheckedTo();
+                }
             }
 
             if (isCorrectFrom)
             {
-                // Has checked from is set to correct, point manager checks list and ensures Oppgave 3 is current task and sets green
                 hasCheckedFrom = true;
+                if (isScene3 && !_fromNotifiedThisScene)
+                {
+                    _fromNotifiedThisScene = true;
+                    GameStateManager.Instance?.NotifyVoltageCheckedFrom();
+                }
             }
-            
-            voltageText.text = "230V";
 
-            // In Scene 3 only: notify the state machine the first time 230V is confirmed.
-            // Scene 3-1 reuses this multimeter for the bulb swap, so we skip that scene.
-            if (!isScene31 && !_voltageNotifiedThisScene)
-            {
-                _voltageNotifiedThisScene = true;
-                GameStateManager.Instance?.NotifyVoltageVerified();
-            }
+            voltageText.text = "230V";
         }
         else
         {
