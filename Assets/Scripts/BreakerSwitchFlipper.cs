@@ -1,8 +1,11 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class BreakerSwitchFlipper : MonoBehaviour
 {
+    public System.Action OnStateChanged;
+
     [SerializeField] private GameObject breakerSwitch;
     public bool isFlipped = true;
 
@@ -10,6 +13,7 @@ public class BreakerSwitchFlipper : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip flipSound;
 
+    [Header("Consequence Components")]
     [SerializeField] private ConsequenceFlags consequenceFlags;
     [SerializeField] private ShockGiver shockgiver;
     [SerializeField] private SetGreenActivateNext setGreenActivateNext;
@@ -21,15 +25,23 @@ public class BreakerSwitchFlipper : MonoBehaviour
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
-        
-        if (shockgiver == null)
-            shockgiver = GetComponent<ShockGiver>();
 
-        if (consequenceFlags == null)
-            consequenceFlags = GetComponent<ConsequenceFlags>();
+        // Only initialize consequence-related dependencies if NOT in scene 3-1
+        string currentScene = SceneManager.GetActiveScene().name;
+#if UNITY_EDITOR
+        Debug.Log($"Current scene: {currentScene}");
+#endif
+        if (currentScene != "Scene 3-1")
+        {
+            if (shockgiver == null)
+                shockgiver = GetComponent<ShockGiver>();
 
-        if (setGreenActivateNext == null)
-            setGreenActivateNext = FindObjectOfType<SetGreenActivateNext>();
+            if (consequenceFlags == null)
+                consequenceFlags = GetComponent<ConsequenceFlags>();
+
+            if (setGreenActivateNext == null)
+                setGreenActivateNext = GetComponent<SetGreenActivateNext>();
+        }
 
         ApplyTransform();
     }
@@ -42,16 +54,20 @@ public class BreakerSwitchFlipper : MonoBehaviour
 
         isProcessing = true;
 
-        if (!consequenceFlags.isWearingGloves)
+        // Only apply shock/consequences if these components are available
+        if (consequenceFlags != null && !consequenceFlags.isWearingGloves)
         { 
-            shockgiver.GiveShock();
+            if (shockgiver != null)
+                shockgiver.GiveShock();
             StartCoroutine(ResetInteraction());
             return;
         }
 
         isFlipped = !isFlipped;
 
-        if(setGreenActivateNext.currentTaskName == "Oppgave 4")
+        OnStateChanged?.Invoke();
+
+        if (setGreenActivateNext != null && setGreenActivateNext.currentTaskName == "Oppgave 4")
         {             
             setGreenActivateNext.SetGreen();
         }
@@ -87,7 +103,7 @@ public class BreakerSwitchFlipper : MonoBehaviour
 
     private System.Collections.IEnumerator ResetInteraction()
     {
-        yield return new WaitForSeconds(0.5f); // Wait half a second before allowing another flip
+        yield return new WaitForSeconds(0.5f);
         isProcessing = false;
     }
 }
