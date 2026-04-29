@@ -25,12 +25,12 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
     void Start()
     {
-        isScene31 = SceneManager.GetActiveScene().name == "3-1";
+        isScene31 = SceneManager.GetActiveScene().name == "Scene 3-1";
 #if UNITY_EDITOR
         Debug.Log($"MultimeterScreenUpdater: Detected Scene 3-1: {isScene31}");
 #endif
 
-        isScene3 = SceneManager.GetActiveScene().name == "3";
+        isScene3 = SceneManager.GetActiveScene().name == "Scene 3";
 #if UNITY_EDITOR
         Debug.Log($"MultimeterScreenUpdater: Detected Scene 3: {isScene3}");
 #endif
@@ -72,7 +72,7 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
         // STANDARD VOLTAGE LOGIC (Runs for Scene 3 OR if Scene 3-1 has an armature)
         bool isBreakerOn = breakerSwitch != null && breakerSwitch.isFlipped;
-        bool blockToPower = isScene31 && isBreakerOn;
+        bool blockToPower = isScene31 && !isBreakerOn;
 
         bool isCorrectTo = !blockToPower &&
                            (redProbe.currentSocketName == "Hot Point Red To" &&

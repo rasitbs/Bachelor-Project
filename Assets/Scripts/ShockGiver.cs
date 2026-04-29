@@ -19,11 +19,10 @@ public class ShockGiver : MonoBehaviour
         if (sparks != null)
             sparks.Play();
 
-        // Camera Shake 
-        StartCoroutine(ShakeCamera());
+        // Camera Shake?
 
         // Point Deduction
-        if(EventService.Instance != null)
+        if (EventService.Instance != null)
         {
             EventService.Instance.PublishHseAlert("Shock event", "Player tried to flip breaker without gloves", 5);
         }

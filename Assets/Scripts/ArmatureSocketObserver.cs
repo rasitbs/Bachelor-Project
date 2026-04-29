@@ -1,27 +1,20 @@
 using UnityEngine;
 using Oculus.Interaction;
 
-/// <summary>
-/// Watches the armature snap socket in Scene 3-1.
-/// When the player installs the replacement armature (snaps it into the socket),
-/// this triggers the final state transition to Completed after a short delay.
-///
-/// Setup: assign the SnapInteractable on the armature socket to _armatureSocket
-/// in the Inspector.
-/// </summary>
 public class ArmatureSocketObserver : MonoBehaviour
 {
+    public System.Action OnStateChanged;
+
     [Header("References")]
     [SerializeField] private SnapInteractable _armatureSocket;
 
     private bool _armatureInstalled = false;
+    public bool isLightArmatureNew = false;
 
     private void Awake()
     {
         if (_armatureSocket != null) return;
 
-        // Mirror the auto-find pattern used by MultimeterScreenUpdater so the
-        // Inspector field is optional — no manual assignment needed.
         GameObject socketObj = GameObject.Find("Armature Socket");
         if (socketObj != null)
             _armatureSocket = socketObj.GetComponentInChildren<SnapInteractable>();
@@ -34,20 +27,51 @@ public class ArmatureSocketObserver : MonoBehaviour
     {
         if (_armatureSocket == null) return;
         _armatureSocket.WhenSelectingInteractorViewAdded += HandleArmatureInstalled;
+        _armatureSocket.WhenSelectingInteractorViewRemoved += HandleArmatureRemoved;
     }
 
     private void OnDisable()
     {
         if (_armatureSocket == null) return;
         _armatureSocket.WhenSelectingInteractorViewAdded -= HandleArmatureInstalled;
+        _armatureSocket.WhenSelectingInteractorViewRemoved -= HandleArmatureRemoved;
     }
 
     private void HandleArmatureInstalled(IInteractorView interactor)
     {
-        if (_armatureInstalled) return;
         _armatureInstalled = true;
 
-        Debug.Log($"[ArmatureSocketObserver] Armature installed by {interactor.Identifier}.");
+        MonoBehaviour interactorComponent = interactor as MonoBehaviour;
+
+        if (interactorComponent != null)
+        {
+            GameObject snappedObject = interactorComponent.gameObject;
+
+            if (snappedObject.name.Contains("Light Armature New") ||
+               (snappedObject.transform.parent != null && snappedObject.transform.parent.name.Contains("Light Armature New")) ||
+               (snappedObject.transform.root.name.Contains("Light Armature New")))
+            {
+                isLightArmatureNew = true;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[ArmatureSocketObserver] Could not cast Interactor to MonoBehaviour.");
+        }
+
+        Debug.Log($"[ArmatureSocketObserver] Armature installed. Is New: {isLightArmatureNew}");
+
+        OnStateChanged?.Invoke();
         GameStateManager.Instance?.NotifyArmatureInstalled();
+    }
+
+    private void HandleArmatureRemoved(IInteractorView interactor)
+    {
+        _armatureInstalled = false;
+        isLightArmatureNew = false;
+
+        Debug.Log("[ArmatureSocketObserver] Armature removed.");
+
+        OnStateChanged?.Invoke();
     }
 }
