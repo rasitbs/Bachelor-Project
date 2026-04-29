@@ -70,7 +70,7 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
         // STANDARD VOLTAGE LOGIC (Runs for Scene 3 OR if Scene 3-1 has an armature)
         bool isBreakerOn = breakerSwitch != null && breakerSwitch.isFlipped;
-        bool blockToPower = isScene31 && isBreakerOn;
+        bool blockToPower = isScene31 && !isBreakerOn;
 
         bool isCorrectTo = !blockToPower &&
                            (redProbe.currentSocketName == "Hot Point Red To" &&
