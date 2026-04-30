@@ -13,7 +13,7 @@ public class ProximityZone : MonoBehaviour
     {
         if (playerTransform == null)
         {
-            var xrOrigin = FindObjectOfType<Unity.XR.CoreUtils.XROrigin>();
+            var xrOrigin = FindAnyObjectByType<Unity.XR.CoreUtils.XROrigin>();
             if (xrOrigin != null)
                 playerTransform = xrOrigin.transform;
         }

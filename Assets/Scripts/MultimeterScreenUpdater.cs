@@ -20,11 +20,17 @@ public class MultimeterScreenUpdater : MonoBehaviour
     public bool hasCheckedTo;
     public bool hasCheckedFrom;
     private bool _voltageNotifiedThisScene;
+    private bool _toNotifiedThisScene;
+    private bool _fromNotifiedThisScene;
 
     void Start()
     {
         isScene31 = SceneManager.GetActiveScene().name == "Scene 3-1";
         isScene3 = SceneManager.GetActiveScene().name == "Scene 3";
+
+        _toNotifiedThisScene   = false;
+        _fromNotifiedThisScene = false;
+        _voltageNotifiedThisScene = false;
 
         if (redProbe == null) redProbe = GameObject.Find("RedWirePlug")?.GetComponent<MultimeterProbe>();
         if (blackProbe == null) blackProbe = GameObject.Find("BlackWirePlug")?.GetComponent<MultimeterProbe>();
@@ -83,16 +89,32 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
         if (isCorrectTo || isCorrectFrom || isCorrectCross)
         {
-            if (isCorrectTo) hasCheckedTo = true;
-            if (isCorrectFrom) hasCheckedFrom = true;
+            if (isCorrectTo)
+            {
+                hasCheckedTo = true;
+                if (isScene3 && !_toNotifiedThisScene)
+                {
+                    _toNotifiedThisScene = true;
+                    GameStateManager.Instance?.NotifyVoltageCheckedTo();
+                }
+            }
+
+            if (isCorrectFrom)
+            {
+                hasCheckedFrom = true;
+                if (isScene3 && !_fromNotifiedThisScene)
+                {
+                    _fromNotifiedThisScene = true;
+                    GameStateManager.Instance?.NotifyVoltageCheckedFrom();
+                }
+            }
 
             voltageText.text = "230V";
 
+            // _voltageNotifiedThisScene kept for compatibility — individual
+            // To/From checks above now handle state machine notification.
             if (isScene3 && !_voltageNotifiedThisScene)
-            {
                 _voltageNotifiedThisScene = true;
-                GameStateManager.Instance?.NotifyVoltageVerified();
-            }
         }
         else
         {
