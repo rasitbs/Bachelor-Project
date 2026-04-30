@@ -8,8 +8,12 @@ public class ArmatureSocketObserver : MonoBehaviour
     [Header("References")]
     [SerializeField] private SnapInteractable _armatureSocket;
 
-    private bool _armatureInstalled = false;
     public bool isLightArmatureNew = false;
+    private bool _armatureInstalled = false;
+
+    // Expose the name of the currently socketed interactor so that multimeter screen updater can check if the armature is connected to the socket.
+    public string armatureState => _armatureInstalled ? (isLightArmatureNew ? "New Armature" : "Old Armature") : "Empty Socket";
+
 
     private void Awake()
     {
