@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
-using Oculus.Interaction; 
+using Oculus.Interaction;
 
 public class MultimeterScreenUpdater : MonoBehaviour
 {
@@ -9,8 +9,7 @@ public class MultimeterScreenUpdater : MonoBehaviour
     [SerializeField] private MultimeterProbe redProbe;
     [SerializeField] private MultimeterProbe blackProbe;
     [SerializeField] private BreakerSwitchFlipper breakerSwitch;
-
-    [SerializeField] private SnapInteractable armatureAttachPoint;
+    [SerializeField] private ArmatureSocketObserver armatureSocketObserver;
 
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI voltageText;
@@ -20,60 +19,53 @@ public class MultimeterScreenUpdater : MonoBehaviour
 
     public bool hasCheckedTo;
     public bool hasCheckedFrom;
-    private bool _toNotifiedThisScene;
-    private bool _fromNotifiedThisScene;
+    private bool _voltageNotifiedThisScene;
 
     void Start()
     {
         isScene31 = SceneManager.GetActiveScene().name == "Scene 3-1";
-#if UNITY_EDITOR
-        Debug.Log($"MultimeterScreenUpdater: Detected Scene 3-1: {isScene31}");
-#endif
-
         isScene3 = SceneManager.GetActiveScene().name == "Scene 3";
-#if UNITY_EDITOR
-        Debug.Log($"MultimeterScreenUpdater: Detected Scene 3: {isScene3}");
-#endif
 
-        // References
-        if (redProbe == null) redProbe = GameObject.Find("RedWirePlug").GetComponent<MultimeterProbe>();
-        if (blackProbe == null) blackProbe = GameObject.Find("BlackWirePlug").GetComponent<MultimeterProbe>();
-        if (voltageText == null) voltageText = GameObject.Find("Screen").GetComponent<TextMeshProUGUI>();
+        if (redProbe == null) redProbe = GameObject.Find("RedWirePlug")?.GetComponent<MultimeterProbe>();
+        if (blackProbe == null) blackProbe = GameObject.Find("BlackWirePlug")?.GetComponent<MultimeterProbe>();
+        if (voltageText == null) voltageText = GameObject.Find("Screen")?.GetComponent<TextMeshProUGUI>();
         if (breakerSwitch == null) breakerSwitch = GameObject.Find("Breaker Switch")?.GetComponent<BreakerSwitchFlipper>();
 
-        // Find the Attach Point child if not assigned
-        if (armatureAttachPoint == null)
+        if (isScene31 && armatureSocketObserver == null)
         {
-            GameObject socketObj = GameObject.Find("Armature Socket"); // Adjust name to parent object that holds the SnapInteractable
-            if (socketObj != null)
-            {
-                armatureAttachPoint = socketObj.GetComponentInChildren<SnapInteractable>();
-            }
+            GameObject socketObj = GameObject.Find("Armature Socket");
+            if (socketObj != null) armatureSocketObserver = socketObj.GetComponent<ArmatureSocketObserver>();
         }
-
-        hasCheckedFrom        = false;
-        hasCheckedTo          = false;
-        _toNotifiedThisScene   = false;
-        _fromNotifiedThisScene = false;
     }
 
     void Update()
     {
-        // SCENE 3-1 EXCLUSIVE LOGIC
+        
         if (isScene31)
         {
-            // If the socket (Attach Point) has nothing snapped into it
-            if (armatureAttachPoint == null || armatureAttachPoint.SelectingInteractors == null || armatureAttachPoint.SelectingInteractors.Count == 0)
+            if (armatureSocketObserver == null || armatureSocketObserver.currentSocketedObject == null)
             {
                 voltageText.text = "---V";
-                return; // Exit early: No armature, no voltage reading
+                return;
+            }
+
+           
+            bool probesAreOnSocketedArmature =
+                redProbe.currentOwner == armatureSocketObserver.currentSocketedObject &&
+                blackProbe.currentOwner == armatureSocketObserver.currentSocketedObject;
+
+            if (!probesAreOnSocketedArmature)
+            {
+                voltageText.text = "---V";
+                return; // Probes are touching a different armature instance
             }
         }
 
-        // STANDARD VOLTAGE LOGIC (Runs for Scene 3 OR if Scene 3-1 has an armature)
+       
         bool isBreakerOn = breakerSwitch != null && breakerSwitch.isFlipped;
         bool blockToPower = isScene31 && !isBreakerOn;
 
+        
         bool isCorrectTo = !blockToPower &&
                            (redProbe.currentSocketName == "Hot Point Red To" &&
                             blackProbe.currentSocketName == "Hot Point Black To");
@@ -83,35 +75,24 @@ public class MultimeterScreenUpdater : MonoBehaviour
                               blackProbe.currentSocketName == "Hot Point Black From");
 
         bool isCorrectCross = (isBreakerOn && !blockToPower &&
-                              redProbe.currentSocketName == "Hot Point Red From" &&
-                              blackProbe.currentSocketName == "Hot Point Black To") ||
-                             (isBreakerOn && !blockToPower &&
-                              redProbe.currentSocketName == "Hot Point Red To" &&
-                              blackProbe.currentSocketName == "Hot Point Black From");
+                               redProbe.currentSocketName == "Hot Point Red From" &&
+                               blackProbe.currentSocketName == "Hot Point Black To") ||
+                              (isBreakerOn && !blockToPower &&
+                               redProbe.currentSocketName == "Hot Point Red To" &&
+                               blackProbe.currentSocketName == "Hot Point Black From");
 
         if (isCorrectTo || isCorrectFrom || isCorrectCross)
         {
-            if (isCorrectTo)
-            {
-                hasCheckedTo = true;
-                if (isScene3 && !_toNotifiedThisScene)
-                {
-                    _toNotifiedThisScene = true;
-                    GameStateManager.Instance?.NotifyVoltageCheckedTo();
-                }
-            }
-
-            if (isCorrectFrom)
-            {
-                hasCheckedFrom = true;
-                if (isScene3 && !_fromNotifiedThisScene)
-                {
-                    _fromNotifiedThisScene = true;
-                    GameStateManager.Instance?.NotifyVoltageCheckedFrom();
-                }
-            }
+            if (isCorrectTo) hasCheckedTo = true;
+            if (isCorrectFrom) hasCheckedFrom = true;
 
             voltageText.text = "230V";
+
+            if (isScene3 && !_voltageNotifiedThisScene)
+            {
+                _voltageNotifiedThisScene = true;
+                GameStateManager.Instance?.NotifyVoltageVerified();
+            }
         }
         else
         {
