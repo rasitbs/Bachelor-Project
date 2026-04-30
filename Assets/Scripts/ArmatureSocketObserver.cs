@@ -11,9 +11,10 @@ public class ArmatureSocketObserver : MonoBehaviour
     public bool isLightArmatureNew = false;
     private bool _armatureInstalled = false;
 
-    // Expose the name of the currently socketed interactor so that multimeter screen updater can check if the armature is connected to the socket.
-    public string armatureState => _armatureInstalled ? (isLightArmatureNew ? "New Armature" : "Old Armature") : "Empty Socket";
+    
+    public GameObject currentSocketedObject;
 
+    public string armatureState => _armatureInstalled ? (isLightArmatureNew ? "New Armature" : "Old Armature") : "Empty Socket";
 
     private void Awake()
     {
@@ -49,6 +50,9 @@ public class ArmatureSocketObserver : MonoBehaviour
 
         if (interactorComponent != null)
         {
+            
+            currentSocketedObject = interactorComponent.gameObject.transform.root.gameObject;
+
             GameObject snappedObject = interactorComponent.gameObject;
 
             if (snappedObject.name.Contains("Light Armature New") ||
@@ -63,7 +67,7 @@ public class ArmatureSocketObserver : MonoBehaviour
             Debug.LogWarning("[ArmatureSocketObserver] Could not cast Interactor to MonoBehaviour.");
         }
 
-        Debug.Log($"[ArmatureSocketObserver] Armature installed. Is New: {isLightArmatureNew}");
+        Debug.Log($"[ArmatureSocketObserver] Armature installed: {currentSocketedObject.name}. Is New: {isLightArmatureNew}");
 
         OnStateChanged?.Invoke();
         GameStateManager.Instance?.NotifyArmatureInstalled();
@@ -73,6 +77,8 @@ public class ArmatureSocketObserver : MonoBehaviour
     {
         _armatureInstalled = false;
         isLightArmatureNew = false;
+
+        currentSocketedObject = null;
 
         Debug.Log("[ArmatureSocketObserver] Armature removed.");
 
