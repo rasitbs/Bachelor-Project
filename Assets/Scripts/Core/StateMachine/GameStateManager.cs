@@ -34,8 +34,8 @@ public class GameStateManager : MonoBehaviour
     [Header("Scene Names (must match Build Settings exactly)")]
     [SerializeField] private string sceneName_PPE      = "Scene1_PPE";
     [SerializeField] private string sceneName_SJA      = "Scene2_SJA";
-    [SerializeField] private string sceneName_PreLift  = "3";
-    [SerializeField] private string sceneName_Lift     = "3-1";
+    [SerializeField] private string sceneName_PreLift  = "Scene 3";
+    [SerializeField] private string sceneName_Lift     = "Scene 3-1";
     [SerializeField] private string sceneName_Final    = "Final";
 
     // ── Scene 2 dual-completion gate ──────────────────────────────────────────

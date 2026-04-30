@@ -27,7 +27,7 @@ public class HazardManager : MonoBehaviour
 
     void Start()
     {
-        HazardMarker[] allMarkers = FindObjectsOfType<HazardMarker>();
+        HazardMarker[] allMarkers = FindObjectsByType<HazardMarker>(FindObjectsSortMode.None);
         foreach (var marker in allMarkers)
         {
             if (marker.isCorrectHazard)

@@ -32,7 +32,7 @@ public class LiftAttachPoint : MonoBehaviour
         if (_hookAttached) return;
 
         // Find hook in scene
-        HookItem[] hooks = FindObjectsOfType<HookItem>();
+        HookItem[] hooks = FindObjectsByType<HookItem>(FindObjectsSortMode.None);
         HookItem nearest = null;
         float nearestDist = float.MaxValue;
 
