@@ -13,7 +13,10 @@ public class Progress : MonoBehaviour
     [Header("Publics")]
     public string currentTask = null;
 
-    
+    private bool _coverRemoved = false;
+    private bool _armatureRemoved = false;
+    private
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
